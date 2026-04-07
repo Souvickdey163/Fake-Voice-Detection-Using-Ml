@@ -57,7 +57,7 @@ export default function AuthPage() {
     try {
       setOtpLoading(true);
 
-      await api.post('/auth/send-otp', {
+      await api.post('/api/auth/send-otp', {
         email: formData.email,
       });
 
@@ -89,11 +89,12 @@ export default function AuthPage() {
         formDataParams.append('username', formData.email);
         formDataParams.append('password', formData.password);
 
-        const response = await api.post('/auth/login', formDataParams, {
+        const response = await api.post('/api/auth/login', formDataParams, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
         localStorage.setItem('token', response.data.access_token);
+
         if (response.data.user) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
         }
@@ -112,7 +113,7 @@ export default function AuthPage() {
           return;
         }
 
-        await api.post('/auth/register', {
+        await api.post('/api/auth/register', {
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -145,7 +146,7 @@ export default function AuthPage() {
     setGoogleLoading(true);
 
     try {
-      const response = await api.post('/auth/google', {
+      const response = await api.post('/api/auth/google', {
         token: credentialResponse.credential,
       });
 
@@ -153,6 +154,7 @@ export default function AuthPage() {
         'token',
         response.data.access_token || response.data.token
       );
+
       if (response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
@@ -160,7 +162,7 @@ export default function AuthPage() {
       toast.success('Google login successful!');
       navigate('/dashboard');
     } catch (error) {
-      console.error(error);
+      console.error('Google auth error:', error);
       toast.error(
         error.response?.data?.detail ||
           error.response?.data?.message ||
@@ -278,7 +280,11 @@ export default function AuthPage() {
                     disabled={otpLoading}
                     className="px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all min-w-[110px]"
                   >
-                    {otpLoading ? 'Sending...' : otpSent ? 'Resend OTP' : 'Send OTP'}
+                    {otpLoading
+                      ? 'Sending...'
+                      : otpSent
+                      ? 'Resend OTP'
+                      : 'Send OTP'}
                   </button>
                 </div>
               ) : (
@@ -376,7 +382,7 @@ export default function AuthPage() {
           </div>
 
           {/* Google Login */}
-          <div className="flex justify-center"> 
+          <div className="flex justify-center">
             {googleLoading ? (
               <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
