@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -57,7 +57,7 @@ export default function AuthPage() {
     try {
       setOtpLoading(true);
 
-      await api.post('/auth/send-otp', {
+      await api.post('/api/auth/send-otp', {
         email: formData.email,
       });
 
@@ -65,6 +65,8 @@ export default function AuthPage() {
       setOtpSent(true);
     } catch (error) {
       console.error('OTP send error:', error);
+      console.error('Backend response:', error.response?.data);
+
       toast.error(
         error.response?.data?.detail ||
           error.response?.data?.message ||
@@ -89,7 +91,7 @@ export default function AuthPage() {
         formDataParams.append('username', formData.email);
         formDataParams.append('password', formData.password);
 
-        const response = await api.post('/auth/login', formDataParams, {
+        const response = await api.post('/api/auth/login', formDataParams, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
@@ -113,7 +115,7 @@ export default function AuthPage() {
           return;
         }
 
-        await api.post('/auth/register', {
+        await api.post('/api/auth/register', {
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -129,6 +131,8 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error('Auth error:', error);
+      console.error('Backend response:', error.response?.data);
+
       toast.error(
         error.response?.data?.detail ||
           error.response?.data?.message ||
@@ -142,36 +146,43 @@ export default function AuthPage() {
   // =========================
   // GOOGLE LOGIN
   // =========================
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setGoogleLoading(true);
+const handleGoogleSuccess = useCallback(async (credentialResponse) => {
+  if (!credentialResponse?.credential) {
+    toast.error('Google credential not received');
+    return;
+  }
 
-    try {
-      const response = await api.post('/auth/google', {
-        token: credentialResponse.credential,
-      });
+  setGoogleLoading(true);
 
-      localStorage.setItem(
-        'token',
-        response.data.access_token || response.data.token
-      );
+  try {
+    const response = await api.post('/api/auth/google', {
+      token: credentialResponse.credential,
+    });
 
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
+    localStorage.setItem(
+      'token',
+      response.data.access_token || response.data.token
+    );
 
-      toast.success('Google login successful!');
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Google auth error:', error);
-      toast.error(
-        error.response?.data?.detail ||
-          error.response?.data?.message ||
-          'Google authentication failed'
-      );
-    } finally {
-      setGoogleLoading(false);
+    if (response.data.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user));
     }
-  };
+
+    toast.success('Google login successful!');
+    navigate('/dashboard');
+  } catch (error) {
+    console.error('Google auth error:', error);
+    console.error('Backend response:', error.response?.data);
+
+    toast.error(
+      error.response?.data?.detail ||
+        error.response?.data?.message ||
+        'Google authentication failed'
+    );
+  } finally {
+    setGoogleLoading(false);
+  }
+}, [navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
@@ -382,20 +393,22 @@ export default function AuthPage() {
           </div>
 
           {/* Google Login */}
+          {isLogin && (
           <div className="flex justify-center">
-            {googleLoading ? (
-              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => toast.error('Google Login Failed')}
-                theme="filled_black"
-                shape="pill"
-                size="large"
-                text={isLogin ? 'signin_with' : 'signup_with'}
-              />
-            )}
+          {googleLoading ? (
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+          <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => toast.error('Google Login Failed')}
+          theme="filled_black"
+          shape="pill"
+          size="large"
+          text="continue_with"
+          />
+          )}
           </div>
+          )}
         </div>
       </div>
     </div>
