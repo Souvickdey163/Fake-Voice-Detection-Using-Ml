@@ -12,7 +12,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     // Fetch profile on load
-    api.get('/users/me')
+    api.get('/api/users/me')
       .then(res => setUser(res.data))
       .catch((err) => {
         console.error(err);
@@ -21,38 +21,34 @@ export default function Dashboard() {
   }, []);
 
   const handlePredict = async () => {
-  if (!file) {
-    toast.error('Please upload an audio file first.');
-    return;
-  }
+    if (!file) {
+      toast.error('Please upload an audio file first.');
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const token = localStorage.getItem("token");
-    console.log("TOKEN:", token); // debug
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const formData = new FormData();
-    formData.append('file', file);
+      const response = await api.post('/api/predict', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-    const response = await api.post('/predict', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log("Prediction response:", response.data); // debug
-    setResult(response.data);
-    toast.success('Prediction complete!');
-  } catch (error) {
-    console.error("Prediction failed full error:", error);
-    console.error("Backend response:", error.response?.data);
-    toast.error(error.response?.data?.detail || 'Error running prediction');
-  } finally {
-    setLoading(false);
-  }
-};
+      console.log("Prediction response:", response.data);
+      setResult(response.data);
+      toast.success('Prediction complete!');
+    } catch (error) {
+      console.error("Prediction failed full error:", error);
+      console.error("Backend response:", error.response?.data);
+      toast.error(error.response?.data?.detail || 'Error running prediction');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleReset = () => {
     setFile(null);
