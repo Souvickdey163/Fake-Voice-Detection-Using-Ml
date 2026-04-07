@@ -1,0 +1,51 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Node modules
+node_modules/
+npm-debug.log
+
+# Datasets and Data processing
+ASVspoof 2019 Dataset/
+cleaned_data/
+processed_data/
+
+# Python cache / artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Mac OS
+.DS_Store
+
+# Temporary outputs / training files
+temp_*
+
+# Ignore dataset/test wavs if needed
+# *.wav
+
+# Allow deployment model files
+!deepfake-detector/server/models/
+!deepfake-detector/server/models/*.pth
+!deepfake-detector/server/models/*.json

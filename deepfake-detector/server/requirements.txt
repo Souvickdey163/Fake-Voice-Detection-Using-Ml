@@ -1,0 +1,17 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+fastapi
+uvicorn
+pymongo==4.6.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart
+# Install CPU-specific torch to save space on Railway
+torch
+librosa
+numpy
+pydantic[email]
+python-dotenv==1.0.1
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+requests
