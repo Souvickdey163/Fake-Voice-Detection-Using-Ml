@@ -388,27 +388,28 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
           {/* Divider */}
           <div className="my-6 flex items-center">
             <div className="flex-grow border-t border-gray-700"></div>
-            <span className="mx-4 text-sm text-gray-400">OR</span>
+            <span className="mx-4 text-sm text-gray-400">
+              {isLogin ? "OR CONTINUE WITH" : "OR SIGN UP WITH"}
+            </span>
             <div className="flex-grow border-t border-gray-700"></div>
           </div>
 
           {/* Google Login */}
-          {isLogin && (
+          {/* Google Login */}
           <div className="flex justify-center">
-          {googleLoading ? (
-          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-          <GoogleLogin
-          onSuccess={handleGoogleSuccess}
-          onError={() => toast.error('Google Login Failed')}
-          theme="filled_black"
-          shape="pill"
-          size="large"
-          text="continue_with"
-          />
-          )}
+            {googleLoading ? (
+              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error('Google Login Failed')}
+                theme="filled_black"
+                shape="pill"
+                size="large"
+                text={isLogin ? "signin_with" : "signup_with"}
+              />
+            )}
           </div>
-          )}
         </div>
       </div>
     </div>
