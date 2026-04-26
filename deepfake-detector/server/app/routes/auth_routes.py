@@ -34,7 +34,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIEN
 # HELPER: SEND EMAIL OTP
 # =========================
 def send_email_otp(receiver_email: str, otp: str):
-    subject = "Your AudioGuard OTP Code"
+    subject = "Your NeuroVoice OTP Code"
     body = f"""
 Hello,
 
@@ -44,7 +44,7 @@ This OTP will expire in 5 minutes.
 
 If you did not request this, please ignore this email.
 
-- AudioGuard Team
+- NeuroVoice Team
 """
 
     msg = MIMEText(body)

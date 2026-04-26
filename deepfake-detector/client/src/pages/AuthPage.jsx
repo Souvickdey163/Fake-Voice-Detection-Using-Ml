@@ -102,7 +102,7 @@ export default function AuthPage() {
         }
 
         toast.success('Login successful!');
-        navigate('/dashboard');
+        navigate('/');
       } else {
         // REGISTER WITH OTP
         if (!otpSent) {
@@ -128,6 +128,7 @@ export default function AuthPage() {
         setOtp('');
         setOtpSent(false);
         setShowPassword(false);
+        navigate('/');
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -169,7 +170,7 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
     }
 
     toast.success('Google login successful!');
-    navigate('/dashboard');
+    navigate('/');
   } catch (error) {
     console.error('Google auth error:', error);
     console.error('Backend response:', error.response?.data);
@@ -198,10 +199,10 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
             <ShieldCheck className="w-12 h-12 text-blue-500" />
           </div>
           <h1 className="text-5xl font-extrabold text-white tracking-tight">
-            AudioGuard
+            NeuroVoice
           </h1>
           <p className="text-gray-400 mt-3 text-lg">
-            Deepfake detection platform
+            NeuroVoice platform
           </p>
         </div>
 

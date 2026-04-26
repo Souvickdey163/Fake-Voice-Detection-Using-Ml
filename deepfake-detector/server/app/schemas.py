@@ -28,11 +28,29 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 # --- Prediction Schemas ---
+class PredictionBreakdown(BaseModel):
+    authenticity: float
+    fakeProbability: float
+    modelConfidence: float
+
+
+class PredictionDetails(BaseModel):
+    vocalConsistency: str
+    backgroundNoise: str
+    spectrogram: str
+
+
 class PredictionResponse(BaseModel):
     id: str
     filename: str
     prediction: str
     confidence: float
+    spoof_probability: float
+    score: float
+    label: str
+    summary: str
+    breakdown: PredictionBreakdown
+    details: PredictionDetails
     timestamp: datetime
 
 class GoogleAuthRequest(BaseModel):

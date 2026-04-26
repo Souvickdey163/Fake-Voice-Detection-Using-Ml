@@ -3,7 +3,23 @@ import { Toaster } from 'react-hot-toast';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
+import Home from './pages/Home';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
 import Navbar from './components/Navbar';
+
+const AppShell = ({ children, contentClassName = 'pt-28 pb-16' }) => (
+  <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <Navbar />
+    <main className={`flex-1 z-10 ${contentClassName}`}>{children}</main>
+
+    <div className="fixed inset-0 overflow-hidden -z-10 pointer-events-none">
+      <div className="absolute left-[-8%] top-[-6%] h-[22rem] w-[22rem] rounded-full bg-blue-500/20 blur-[120px]" />
+      <div className="absolute right-[-10%] top-[10%] h-[24rem] w-[24rem] rounded-full bg-violet-500/20 blur-[140px]" />
+      <div className="absolute bottom-[-12%] left-[22%] h-[20rem] w-[20rem] rounded-full bg-cyan-500/10 blur-[110px]" />
+    </div>
+  </div>
+);
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -12,18 +28,11 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/auth" />;
   }
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1 p-6 z-10">
+    <AppShell contentClassName="pt-28 pb-12">
+      <div className="flex-1 p-6 z-10">
         {children}
-      </main>
-      
-      {/* Background decorations */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"></div>
       </div>
-    </div>
+    </AppShell>
   );
 };
 
@@ -32,7 +41,30 @@ function App() {
     <Router>
       <Toaster position="top-right" toastOptions={{ className: '!bg-gray-800 !text-white' }} />
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route
+          path="/"
+          element={
+            <AppShell contentClassName="pt-28">
+              <Home />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <AppShell contentClassName="pt-28">
+              <About />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <AppShell>
+              <Pricing />
+            </AppShell>
+          }
+        />
         <Route path="/auth" element={<AuthPage />} />
         <Route 
           path="/dashboard" 
@@ -50,6 +82,7 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
