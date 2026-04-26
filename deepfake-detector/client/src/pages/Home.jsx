@@ -18,7 +18,7 @@ import {
   Siren,
   ScanSearch,
 } from 'lucide-react';
-import heroImage from '../assets/imageone.png';
+import heroImage from '../assets/image11.png';
 import familyScamImage from '../assets/image2.png';
 import businessCallsImage from '../assets/image3.png';
 import creatorContentImage from '../assets/image4.png';
