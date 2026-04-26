@@ -448,15 +448,19 @@ export default function Home() {
               <h3 className="text-xl font-medium text-white">Contact</h3>
               <div className="mt-4 space-y-4 text-base text-slate-300">
                 <p className="break-all leading-7 sm:break-normal">support@neurovoice.com</p>
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white">
+                <a
+                  href="mailto:support@neurovoice.com?subject=NeuroVoice%20Support&body=Hello%20NeuroVoice%20Team%2C%0A%0AI%20need%20help%20with%20..."
+                  aria-label="Email NeuroVoice support"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white transition-colors hover:bg-white/10"
+                >
                   <Mail className="h-4 w-4" />
-                </div>
+                </a>
               </div>
             </div>
           </div>
 
           <div className="mt-10 border-t border-white/10 pt-6 text-center text-sm text-slate-500">
-            © 2026 Deepfake Detection. All rights reserved.
+            © 2026 NeuroVoice. All rights reserved.
           </div>
         </div>
       </section>
