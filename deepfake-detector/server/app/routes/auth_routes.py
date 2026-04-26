@@ -1,6 +1,3 @@
-from google.oauth2 import id_token
-from google.auth.transport import requests
-from app.auth import verify_google_token, create_access_token
 import os
 import random
 import smtplib
@@ -16,6 +13,7 @@ from ..schemas import UserCreate, UserLogin, Token, GoogleAuthRequest
 from ..auth import (
     get_password_hash,
     verify_password,
+    verify_google_token,
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
@@ -185,11 +183,10 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
 def google_auth(data: GoogleAuthRequest):
     try:
         # Verify Google ID token
-        idinfo = id_token.verify_oauth2_token(
-            data.token,
-            requests.Request(),
-            GOOGLE_CLIENT_ID
-        )
+        idinfo = verify_google_token(data.token)
+
+        if not idinfo:
+            raise HTTPException(status_code=400, detail="Invalid Google token")
 
         email = idinfo.get("email")
         name = idinfo.get("name")
