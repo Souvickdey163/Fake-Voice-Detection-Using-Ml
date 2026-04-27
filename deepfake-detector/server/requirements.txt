@@ -8,3 +8,6 @@ email-validator
 google-auth
 google-auth-oauthlib
 python-multipart
+numpy
+scipy
+librosa
