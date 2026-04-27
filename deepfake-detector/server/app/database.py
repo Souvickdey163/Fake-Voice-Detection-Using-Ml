@@ -20,4 +20,7 @@ predictions_collection = db["predictions"]
 otp_collection = db["otp_codes"]
 
 # Ensure unique emails for users
-users_collection.create_index("email", unique=True)
+try:
+    users_collection.create_index("email", unique=True)
+except Exception as e:
+    print("MongoDB connection error:", e)
