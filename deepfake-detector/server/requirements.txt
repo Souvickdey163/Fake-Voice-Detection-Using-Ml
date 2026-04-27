@@ -7,3 +7,4 @@ bcrypt
 python-jose
 google-auth
 google-auth-oauthlib
+email-validator
