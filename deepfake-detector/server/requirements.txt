@@ -9,6 +9,6 @@ google-auth
 google-auth-oauthlib
 python-multipart
 numpy
-scipy
+torch
 librosa
-torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+scipy
