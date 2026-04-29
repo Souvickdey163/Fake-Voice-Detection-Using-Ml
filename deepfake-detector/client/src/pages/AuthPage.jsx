@@ -59,7 +59,7 @@ export default function AuthPage() {
     try {
       setOtpLoading(true);
 
-      await api.post('/api/auth/send-otp', {
+      await api.post('/auth/send-otp', {
         email: formData.email,
       });
 
@@ -93,7 +93,7 @@ export default function AuthPage() {
         formDataParams.append('username', formData.email);
         formDataParams.append('password', formData.password);
 
-        const response = await api.post('/api/auth/login', formDataParams, {
+        const response = await api.post('/auth/login', formDataParams, {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
@@ -114,7 +114,7 @@ export default function AuthPage() {
           return;
         }
 
-        await api.post('/api/auth/register', {
+        await api.post('/auth/register', {
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -155,7 +155,7 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
   setGoogleLoading(true);
 
   try {
-    const response = await api.post('/api/auth/google', {
+    const response = await api.post('/auth/google', {
       token: credentialResponse.credential,
     });
 

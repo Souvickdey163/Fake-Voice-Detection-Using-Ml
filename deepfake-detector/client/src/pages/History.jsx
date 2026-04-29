@@ -19,7 +19,7 @@ export default function History() {
 
   const fetchHistory = async () => {
     try {
-      const response = await api.get('/api/history/');
+      const response = await api.get('/history/');
       console.log('History response:', response.data);
       setHistory(response.data);
     } catch (error) {

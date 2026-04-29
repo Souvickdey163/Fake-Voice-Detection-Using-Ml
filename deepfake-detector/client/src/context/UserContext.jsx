@@ -3,7 +3,20 @@ import api from '../services/api';
 import UserContext from './user-context';
 
 export function UserProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem('user');
+
+    if (!storedUser) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
+  });
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +56,7 @@ export function UserProvider({ children }) {
     try {
       setLoading(true);
       setToken(storedToken);
-      const response = await api.get('/api/users/me');
+      const response = await api.get('/users/me');
       setUser(response.data);
       localStorage.setItem('user', JSON.stringify(response.data));
       return response.data;

@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// Use deployed backend if available, otherwise localhost
-// Keep the /api suffix so you don't need to write it in your React components
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+// Use deployed backend if available, otherwise localhost.
+// Accept either a root URL or a URL that already includes /api.
+const API_ROOT = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_URL = API_ROOT.replace(/\/$/, '').replace(/\/api$/, '') + '/api';
 
 const api = axios.create({
   baseURL: API_URL,

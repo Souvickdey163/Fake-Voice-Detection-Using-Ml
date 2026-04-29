@@ -13,3 +13,4 @@ torch
 librosa
 scipy
 gunicorn
+certifi
