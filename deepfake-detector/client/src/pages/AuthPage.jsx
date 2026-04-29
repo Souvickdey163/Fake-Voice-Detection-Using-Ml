@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -180,6 +180,23 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
     setGoogleLoading(false);
   }
 }, [navigate, refreshUser, setSession]);
+
+  const googleButton = useMemo(() => {
+    if (!googleClientId) {
+      return null;
+    }
+
+    return (
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={() => toast.error('Google Login Failed')}
+        theme="filled_black"
+        shape="pill"
+        size="large"
+        text={isLogin ? "signin_with" : "signup_with"}
+      />
+    );
+  }, [googleClientId, handleGoogleSuccess, isLogin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
@@ -383,8 +400,6 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
             <div className="flex-grow border-t border-gray-700"></div>
           </div>
 
-          {/* Google Login */}
-          {/* Google Login */}
           <div className="flex justify-center">
             {googleLoading ? (
               <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -393,14 +408,7 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
                 Google login is unavailable because `VITE_GOOGLE_CLIENT_ID` is missing in the frontend deployment settings.
               </div>
             ) : (
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => toast.error('Google Login Failed')}
-                theme="filled_black"
-                shape="pill"
-                size="large"
-                text={isLogin ? "signin_with" : "signup_with"}
-              />
+              googleButton
             )}
           </div>
         </div>
