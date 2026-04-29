@@ -46,6 +46,6 @@ temp_*
 # *.wav
 
 # Allow deployment model files
-!deepfake-detector/server/models/
-!deepfake-detector/server/models/*.pth
-!deepfake-detector/server/models/*.json
+# Ignore models (IMPORTANT)
+deepfake-detector/server/models/
+*.pth
