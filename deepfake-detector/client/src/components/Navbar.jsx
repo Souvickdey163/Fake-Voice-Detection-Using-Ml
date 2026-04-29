@@ -71,7 +71,7 @@ export default function Navbar() {
                   <History className="h-4 w-4" />
                   <span>History</span>
                 </Link>
-                {user && (
+                {user?.credits && (
                   <div className="hidden items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 md:flex">
                     <div className="flex flex-col">
                       <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">

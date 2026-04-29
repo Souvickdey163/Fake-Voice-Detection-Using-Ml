@@ -33,12 +33,25 @@ export default function ProfileMenu() {
   const containerRef = useRef(null);
   const navigate = useNavigate();
 
-  const planLabel = planLabelMap[user?.plan] || 'Free';
+  const displayUser = user || {
+    name: 'Account',
+    email: 'Signed in',
+    plan: 'free',
+    picture: '',
+    credits: {
+      left: 0,
+      total: 0,
+      used: 0,
+      percent_used: 0,
+    },
+  };
+
+  const planLabel = planLabelMap[displayUser.plan] || 'Free';
   const creditPercent = Math.min(user?.credits?.percent_used || 0, 100);
   const creditsLeft = user?.credits?.left ?? 0;
   const totalCredits = user?.credits?.total ?? 0;
   const lowCredits = creditsLeft <= 2;
-  const canShowAvatar = Boolean(user?.picture) && brokenAvatarUrl !== user.picture;
+  const canShowAvatar = Boolean(displayUser.picture) && brokenAvatarUrl !== displayUser.picture;
 
   const menuItems = useMemo(
     () => [
@@ -79,10 +92,6 @@ export default function ProfileMenu() {
     navigate('/auth');
   };
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -92,18 +101,18 @@ export default function ProfileMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Open profile menu"
-        title={lowCredits ? `Only ${creditsLeft} credits left` : `${creditsLeft} credits left`}
+        title={user?.credits ? (lowCredits ? `Only ${creditsLeft} credits left` : `${creditsLeft} credits left`) : 'Account'}
       >
         {canShowAvatar ? (
           <img
-            src={user.picture}
-            alt={user.name}
+            src={displayUser.picture}
+            alt={displayUser.name}
             className="h-full w-full object-cover"
-            onError={() => setBrokenAvatarUrl(user.picture)}
+            onError={() => setBrokenAvatarUrl(displayUser.picture)}
           />
         ) : (
           <span className="bg-gradient-to-br from-blue-400 to-violet-500 bg-clip-text text-transparent">
-            {getInitials(user.name) || 'NV'}
+            {getInitials(displayUser.name) || 'NV'}
           </span>
         )}
         <span className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-white/10" />
@@ -118,61 +127,69 @@ export default function ProfileMenu() {
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 text-lg font-semibold text-white">
                   {canShowAvatar ? (
                     <img
-                      src={user.picture}
-                      alt={user.name}
+                      src={displayUser.picture}
+                      alt={displayUser.name}
                       className="h-full w-full object-cover"
-                      onError={() => setBrokenAvatarUrl(user.picture)}
+                      onError={() => setBrokenAvatarUrl(displayUser.picture)}
                     />
                   ) : (
-                    getInitials(user.name) || 'NV'
+                    getInitials(displayUser.name) || 'NV'
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-base font-semibold text-white">{user.name}</p>
+                    <p className="truncate text-base font-semibold text-white">{displayUser.name}</p>
                     <span className="rounded-full border border-blue-400/20 bg-blue-400/10 px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.2em] text-blue-200">
                       {planLabel}
                     </span>
                   </div>
-                  <p className="mt-1 truncate text-sm text-slate-300">{user.email}</p>
-                  <p className="mt-3 text-xs text-slate-400">
-                    {creditsLeft} credits left on your {planLabel.toLowerCase()} plan
-                  </p>
+                  <p className="mt-1 truncate text-sm text-slate-300">{displayUser.email}</p>
+                  {user?.credits ? (
+                    <p className="mt-3 text-xs text-slate-400">
+                      {creditsLeft} credits left on your {planLabel.toLowerCase()} plan
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-xs text-slate-400">
+                      Profile details will appear after reconnecting to the backend.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="space-y-4 p-5">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Credits</p>
-                    <p className="mt-1 text-sm font-medium text-white">
-                      {creditsLeft} left
-                    </p>
+              {user?.credits && (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Credits</p>
+                      <p className="mt-1 text-sm font-medium text-white">
+                        {creditsLeft} left
+                      </p>
+                    </div>
+                    <div
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
+                        lowCredits
+                          ? 'border-amber-400/25 bg-amber-400/10 text-amber-200'
+                          : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
+                      }`}
+                    >
+                      <CreditCard className="h-3.5 w-3.5" />
+                      <span>{user.credits.used} / {totalCredits} used</span>
+                    </div>
                   </div>
-                  <div
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${
-                      lowCredits
-                        ? 'border-amber-400/25 bg-amber-400/10 text-amber-200'
-                        : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200'
-                    }`}
-                  >
-                    <CreditCard className="h-3.5 w-3.5" />
-                    <span>{user.credits.used} / {totalCredits} used</span>
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/8">
+                    <div
+                      className={`h-full rounded-full ${
+                        lowCredits
+                          ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+                          : 'bg-gradient-to-r from-blue-400 to-violet-500'
+                      }`}
+                      style={{ width: `${creditPercent}%` }}
+                    />
                   </div>
                 </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/8">
-                  <div
-                    className={`h-full rounded-full ${
-                      lowCredits
-                        ? 'bg-gradient-to-r from-amber-400 to-orange-500'
-                        : 'bg-gradient-to-r from-blue-400 to-violet-500'
-                    }`}
-                    style={{ width: `${creditPercent}%` }}
-                  />
-                </div>
-              </div>
+              )}
 
               <div className="space-y-1">
                 {menuItems.map((item) => {
