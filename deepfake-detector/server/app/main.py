@@ -6,10 +6,8 @@ import os
 app = FastAPI(title="Deepfake Audio Detection API")
 
 # =========================
-# CORS CONFIG (PRODUCTION SAFE)
+# CORS CONFIG
 # =========================
-
-frontend_url = os.getenv("FRONTEND_URL")
 
 origins = [
     "http://localhost:5173",
@@ -18,13 +16,14 @@ origins = [
     "http://127.0.0.1:5174",
 ]
 
-# Add production frontend if available
+# Add production frontend if available.
+frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url:
-    origins.append(frontend_url)
+    origins.append(frontend_url.rstrip("/"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,   # safe approach
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
