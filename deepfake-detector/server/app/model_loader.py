@@ -1,4 +1,5 @@
 import os
+import time
 import torch
 import torch.nn as nn
 
@@ -70,13 +71,17 @@ class DeepfakeCNN(nn.Module):
 def load_model():
     global model
     if model is None:
+        start = time.perf_counter()
         model = DeepfakeCNN().to(device)
         model_path = resolve_model_path()
+        print(f"[predict] loading model from {model_path}", flush=True)
         model.load_state_dict(torch.load(model_path, map_location=device))
         model.eval()
+        print(f"[predict] model loaded in {time.perf_counter() - start:.2f}s on {device}", flush=True)
 
 
 def predict(input_tensor):
+    start = time.perf_counter()
     load_model()
     with torch.no_grad():
         if not isinstance(input_tensor, torch.Tensor):
@@ -92,4 +97,5 @@ def predict(input_tensor):
 
         label = "Spoof (Fake)" if pred == 1 else "Bonafide (Real)"
 
+        print(f"[predict] model inference done in {time.perf_counter() - start:.2f}s", flush=True)
         return label, confidence, spoof_probability

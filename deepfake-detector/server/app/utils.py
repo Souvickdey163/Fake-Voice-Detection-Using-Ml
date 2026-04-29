@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 import numpy as np
 import librosa
 
@@ -15,6 +16,7 @@ N_MFCC = 40
 # CONVERT TO WAV
 # =========================
 def convert_to_wav(input_path):
+    start = time.perf_counter()
     output_path = input_path + ".wav"
 
     command = [
@@ -26,15 +28,22 @@ def convert_to_wav(input_path):
         output_path
     ]
 
-    result = subprocess.run(
-        command,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    )
+    try:
+        result = subprocess.run(
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=30
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("Audio conversion timed out after 30 seconds") from exc
 
     if result.returncode != 0 or not os.path.exists(output_path):
-        raise ValueError("Failed to convert audio to WAV")
+        error_detail = (result.stderr or "").strip().splitlines()[-1:] or ["unknown ffmpeg error"]
+        raise ValueError(f"Failed to convert audio to WAV: {error_detail[0]}")
 
+    print(f"[predict] ffmpeg conversion done in {time.perf_counter() - start:.2f}s", flush=True)
     return output_path
 
 
@@ -43,6 +52,7 @@ def convert_to_wav(input_path):
 # =========================
 def extract_features_safe(file_path, sr=SAMPLE_RATE, max_len=MAX_AUDIO_LEN):
     try:
+        start = time.perf_counter()
         audio, _ = librosa.load(file_path, sr=sr, mono=True)
 
         if not np.isfinite(audio).all():
@@ -58,6 +68,7 @@ def extract_features_safe(file_path, sr=SAMPLE_RATE, max_len=MAX_AUDIO_LEN):
             audio = audio[:max_samples]
 
         # ===== SAME FEATURE EXTRACTION AS TRAINING =====
+        feature_start = time.perf_counter()
         mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC)
         delta = librosa.feature.delta(mfcc)
         delta2 = librosa.feature.delta(mfcc, order=2)
@@ -75,8 +86,14 @@ def extract_features_safe(file_path, sr=SAMPLE_RATE, max_len=MAX_AUDIO_LEN):
         feature = np.expand_dims(feature, axis=0)   # batch dimension
         feature = np.expand_dims(feature, axis=0)   # channel dimension
 
+        print(
+            "[predict] feature extraction done "
+            f"in {time.perf_counter() - start:.2f}s "
+            f"(librosa features {time.perf_counter() - feature_start:.2f}s)",
+            flush=True
+        )
         return feature.astype(np.float32)
 
     except Exception as e:
-        print("FEATURE EXTRACTION ERROR:", e)
+        print("FEATURE EXTRACTION ERROR:", e, flush=True)
         raise ValueError(str(e))

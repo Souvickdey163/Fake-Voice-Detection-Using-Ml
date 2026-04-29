@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from datetime import datetime
 import os
+import time
 import uuid
 
 from ..dependencies import get_current_user
@@ -62,10 +63,14 @@ async def run_prediction(
 ):
     file_path = None
     wav_path = None
+    request_start = time.perf_counter()
 
     try:
+        print(f"[predict] request started for {file.filename}", flush=True)
+        step_start = time.perf_counter()
         used_credits = predictions_collection.count_documents({"user_id": current_user["_id"]})
         credit_summary = build_credit_summary(current_user.get("plan"), used_credits)
+        print(f"[predict] credit check done in {time.perf_counter() - step_start:.2f}s", flush=True)
 
         if credit_summary["credits"]["left"] <= 0:
             raise HTTPException(
@@ -77,14 +82,25 @@ async def run_prediction(
         unique_name = f"{uuid.uuid4()}_{file.filename}"
         file_path = f"temp_{unique_name}"
 
+        step_start = time.perf_counter()
+        contents = await file.read()
         with open(file_path, "wb") as buffer:
-            buffer.write(await file.read())
+            buffer.write(contents)
+        print(
+            f"[predict] upload saved in {time.perf_counter() - step_start:.2f}s "
+            f"({len(contents)} bytes)",
+            flush=True
+        )
 
         # Convert uploaded file to WAV
+        step_start = time.perf_counter()
         wav_path = convert_to_wav(file_path)
+        print(f"[predict] convert step total {time.perf_counter() - step_start:.2f}s", flush=True)
 
         # Extract MFCC safely
+        step_start = time.perf_counter()
         features = extract_features_safe(wav_path)
+        print(f"[predict] feature step total {time.perf_counter() - step_start:.2f}s", flush=True)
 
         if features is None:
             raise HTTPException(
@@ -93,7 +109,9 @@ async def run_prediction(
             )
 
         # Run inference
+        step_start = time.perf_counter()
         prediction_label, confidence, spoof_probability = predict(features)
+        print(f"[predict] inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
         analysis_report = build_analysis_report(
             prediction_label,
             confidence,
@@ -113,9 +131,12 @@ async def run_prediction(
         }
 
         # Save to DB
+        step_start = time.perf_counter()
         result = predictions_collection.insert_one(prediction_doc)
+        print(f"[predict] db insert done in {time.perf_counter() - step_start:.2f}s", flush=True)
 
         # Return response
+        print(f"[predict] request completed in {time.perf_counter() - request_start:.2f}s", flush=True)
         return {
             "id": str(result.inserted_id),
             "filename": file.filename,
@@ -130,7 +151,7 @@ async def run_prediction(
         raise e
 
     except Exception as e:
-        print("🔥 Prediction error:", e)
+        print("🔥 Prediction error:", e, flush=True)
         raise HTTPException(status_code=400, detail=f"Audio processing failed: {str(e)}")
 
     finally:

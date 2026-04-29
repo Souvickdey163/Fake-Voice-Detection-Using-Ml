@@ -7,6 +7,7 @@ const API_URL = API_ROOT.replace(/\/$/, '').replace(/\/api$/, '') + '/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 60000,
 });
 
 // Auto attach JWT token
