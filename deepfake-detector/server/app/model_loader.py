@@ -6,6 +6,24 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = None
 
 
+def resolve_model_path():
+    server_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_dir = os.path.dirname(os.path.dirname(server_dir))
+    candidate_paths = [
+        os.path.join(server_dir, "models", "best_model_improved.pth"),
+        os.path.join(project_dir, "saved_models", "best_model_improved.pth"),
+        os.path.join(project_dir, "saved_models", "best_model.pth"),
+    ]
+
+    for path in candidate_paths:
+        if os.path.exists(path):
+            return path
+
+    raise FileNotFoundError(
+        "Model file not found. Checked: " + ", ".join(candidate_paths)
+    )
+
+
 class DeepfakeCNN(nn.Module):
     def __init__(self):
         super(DeepfakeCNN, self).__init__()
@@ -53,9 +71,7 @@ def load_model():
     global model
     if model is None:
         model = DeepfakeCNN().to(device)
-        # Safely resolve absolute path regardless of where uvicorn is executed from
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        model_path = os.path.join(base_dir, "models", "best_model_improved.pth")
+        model_path = resolve_model_path()
         model.load_state_dict(torch.load(model_path, map_location=device))
         model.eval()
 
