@@ -11,12 +11,13 @@ import {
   EyeOff,
   KeyRound,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 import api from '../services/api';
+import { useUser } from '../hooks/useUser';
 
 export default function AuthPage() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,6 +33,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const { setSession, refreshUser } = useUser();
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -95,11 +97,8 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
-        localStorage.setItem('token', response.data.access_token);
-
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
+        setSession(response.data.access_token, response.data.user || null);
+        await refreshUser().catch(() => null);
 
         toast.success('Login successful!');
         navigate('/');
@@ -128,7 +127,7 @@ export default function AuthPage() {
         setOtp('');
         setOtpSent(false);
         setShowPassword(false);
-        navigate('/');
+        navigate('/auth');
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -160,14 +159,11 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
       token: credentialResponse.credential,
     });
 
-    localStorage.setItem(
-      'token',
-      response.data.access_token || response.data.token
+    setSession(
+      response.data.access_token || response.data.token,
+      response.data.user || null
     );
-
-    if (response.data.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
+    await refreshUser().catch(() => null);
 
     toast.success('Google login successful!');
     navigate('/');
@@ -183,7 +179,7 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
   } finally {
     setGoogleLoading(false);
   }
-}, [navigate]);
+}, [navigate, refreshUser, setSession]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
@@ -234,15 +230,8 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <AnimatePresence mode="wait">
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, y: -10 }}
-                  animate={{ opacity: 1, height: 'auto', y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -10 }}
-                  transition={{ duration: 0.25 }}
-                  className="space-y-6 overflow-hidden"
-                >
+            {!isLogin && (
+              <div className="space-y-6 overflow-hidden animate-fade-in-up">
                   {/* Full Name */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-300">
@@ -261,9 +250,8 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
                       />
                     </div>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+              </div>
+            )}
 
             {/* Email */}
             <div className="space-y-2">
@@ -400,6 +388,10 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
           <div className="flex justify-center">
             {googleLoading ? (
               <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : !googleClientId ? (
+              <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-300">
+                Google login is unavailable because `VITE_GOOGLE_CLIENT_ID` is missing in the frontend deployment settings.
+              </div>
             ) : (
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}

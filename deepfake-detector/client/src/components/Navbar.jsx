@@ -1,26 +1,18 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Mic,
   LayoutDashboard,
   History,
-  LogOut,
   Sparkles,
   Info,
   BadgeDollarSign,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import ProfileMenu from './ProfileMenu';
+import { useUser } from '../hooks/useUser';
 
 export default function Navbar() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const isLoggedIn = Boolean(localStorage.getItem('token'));
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    toast.success('Logged out successfully');
-    navigate('/auth');
-  };
+  const { isLoggedIn, user } = useUser();
 
   const navLinkClass = (path) =>
     location.pathname === path
@@ -79,13 +71,28 @@ export default function Navbar() {
                   <History className="h-4 w-4" />
                   <span>History</span>
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-300 transition-all hover:border-red-400/30 hover:bg-red-500/10 hover:text-red-200"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
+                {user && (
+                  <div className="hidden items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-200 md:flex">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                        Credits
+                      </span>
+                      <span className="font-medium text-white">
+                        {user.credits.left} left
+                      </span>
+                    </div>
+                    <div className="h-8 w-px bg-white/10" />
+                    <div className="text-right">
+                      <span className="block text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                        Plan
+                      </span>
+                      <span className="block font-medium capitalize text-blue-200">
+                        {user.plan}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <ProfileMenu />
               </>
             ) : (
               <Link

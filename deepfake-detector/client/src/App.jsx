@@ -6,7 +6,9 @@ import History from './pages/History';
 import Home from './pages/Home';
 import Pricing from './pages/Pricing';
 import About from './pages/About';
+import Settings from './pages/Settings';
 import Navbar from './components/Navbar';
+import { UserProvider } from './context/UserContext';
 
 const AppShell = ({ children, contentClassName = 'pt-28 pb-16' }) => (
   <div className="min-h-screen flex flex-col relative overflow-hidden">
@@ -38,53 +40,63 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <Toaster position="top-right" toastOptions={{ className: '!bg-gray-800 !text-white' }} />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <AppShell contentClassName="pt-28">
-              <Home />
-            </AppShell>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <AppShell contentClassName="pt-28">
-              <About />
-            </AppShell>
-          }
-        />
-        <Route
-          path="/pricing"
-          element={
-            <AppShell>
-              <Pricing />
-            </AppShell>
-          }
-        />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/history" 
-          element={
-            <ProtectedRoute>
-              <History />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Toaster position="top-right" toastOptions={{ className: '!bg-gray-800 !text-white' }} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <AppShell contentClassName="pt-28">
+                <Home />
+              </AppShell>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <AppShell contentClassName="pt-28">
+                <About />
+              </AppShell>
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <AppShell>
+                <Pricing />
+              </AppShell>
+            }
+          />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/history" 
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 

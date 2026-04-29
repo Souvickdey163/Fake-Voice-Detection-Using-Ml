@@ -10,7 +10,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: '$19/mo',
+    price: 'Rs 1,599/mo',
     badge: 'Most Popular',
     description: 'For freelancers, creators, and analysts who need a more polished workflow.',
     features: ['Everything in Starter', 'Priority experience', 'Faster review workflow', 'Extended usage capacity'],
@@ -18,7 +18,7 @@ const plans = [
   },
   {
     name: 'Team',
-    price: '$49/mo',
+    price: 'Rs 3,999/mo',
     description: 'Great for ops, newsroom, and trust teams validating sensitive voice evidence.',
     features: ['Everything in Pro', 'Shared verification process', 'Operational visibility', 'Advanced support readiness'],
   },

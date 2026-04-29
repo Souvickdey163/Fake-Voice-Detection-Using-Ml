@@ -4,9 +4,10 @@ import os
 import uuid
 
 from ..dependencies import get_current_user
-from ..utils import convert_to_wav, extract_features_safe
-from ..model_loader import predict
 from ..database import predictions_collection
+from ..model_loader import predict
+from ..plan_utils import build_credit_summary
+from ..utils import convert_to_wav, extract_features_safe
 
 router = APIRouter(prefix="/api", tags=["predict"])
 
@@ -63,6 +64,15 @@ async def run_prediction(
     wav_path = None
 
     try:
+        used_credits = predictions_collection.count_documents({"user_id": current_user["_id"]})
+        credit_summary = build_credit_summary(current_user.get("plan"), used_credits)
+
+        if credit_summary["credits"]["left"] <= 0:
+            raise HTTPException(
+                status_code=403,
+                detail=f"You have used all {credit_summary['credits']['total']} credits on your {credit_summary['plan']} plan."
+            )
+
         # Save uploaded file to temp
         unique_name = f"{uuid.uuid4()}_{file.filename}"
         file_path = f"temp_{unique_name}"

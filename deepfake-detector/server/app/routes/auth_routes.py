@@ -129,7 +129,8 @@ def register_user(user: UserCreate):
         "password": hashed_password,
         "created_at": datetime.utcnow(),
         "provider": "local",
-        "picture": ""
+        "picture": "",
+        "plan": "free",
     }
 
     users_collection.insert_one(user_dict)
@@ -206,7 +207,8 @@ def google_auth(data: GoogleAuthRequest):
                 "password": None,
                 "created_at": datetime.utcnow(),
                 "provider": "google",
-                "picture": picture
+                "picture": picture,
+                "plan": "free",
             }
             users_collection.insert_one(user_dict)
             user = users_collection.find_one({"email": email.lower()})
@@ -228,6 +230,8 @@ def google_auth(data: GoogleAuthRequest):
             }
         }
 
+    except HTTPException:
+        raise
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid Google token")
     except Exception as e:

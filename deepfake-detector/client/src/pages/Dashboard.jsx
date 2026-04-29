@@ -3,22 +3,20 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import UploadCard from '../components/UploadCard';
 import ResultCard from '../components/ResultCard';
+import { useUser } from '../hooks/useUser';
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null);
+  const { user, refreshUser } = useUser();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    // Fetch profile on load
-    api.get('/api/users/me')
-      .then(res => setUser(res.data))
-      .catch((err) => {
-        console.error(err);
-        toast.error('Session expired, please login again.');
-      });
-  }, []);
+    refreshUser().catch((err) => {
+      console.error(err);
+      toast.error('Session expired, please login again.');
+    });
+  }, [refreshUser]);
 
   const handlePredict = async () => {
     if (!file) {
@@ -40,6 +38,7 @@ export default function Dashboard() {
 
       console.log("Prediction response:", response.data);
       setResult(response.data);
+      await refreshUser();
       toast.success('Prediction complete!');
     } catch (error) {
       console.error("Prediction failed full error:", error);
@@ -65,6 +64,13 @@ export default function Dashboard() {
           <p className="mt-4 text-lg text-gray-400">
             Upload an audio sample to analyze its authenticity using our powerful Deep Learning Model.
           </p>
+          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-slate-200">
+            <span>{user.credits.left} credits left</span>
+            <span className="h-1 w-1 rounded-full bg-slate-500" />
+            <span>
+              {user.credits.used} / {user.credits.total} used on {user.plan}
+            </span>
+          </div>
         </div>
       )}
 
