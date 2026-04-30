@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // Use deployed backend if available, otherwise localhost.
-// Accept either a root URL or a URL that already includes /api.
+// Keep the base at the backend root; request paths include /api explicitly.
 const API_ROOT = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-const API_URL = API_ROOT.replace(/\/$/, '').replace(/\/api$/, '') + '/api';
+const API_URL = API_ROOT.replace(/\/$/, '').replace(/\/api$/, '');
 
 const api = axios.create({
   baseURL: API_URL,
