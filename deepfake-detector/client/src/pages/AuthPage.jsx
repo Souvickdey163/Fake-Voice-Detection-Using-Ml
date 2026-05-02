@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -12,12 +12,10 @@ import {
   KeyRound,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import GoogleSignInButton from '../components/GoogleSignInButton';
-import api from '../services/api';
+import api, { API_URL } from '../services/api';
 import { useUser } from '../hooks/useUser';
 
 export default function AuthPage() {
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,9 +29,36 @@ export default function AuthPage() {
   const [otpLoading, setOtpLoading] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setSession, refreshUser } = useUser();
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${API_URL}/api/auth/google`;
+  };
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    const error = searchParams.get('error');
+
+    if (error) {
+      toast.error(error);
+      navigate('/auth', { replace: true });
+      return;
+    }
+
+    if (!token) {
+      return;
+    }
+
+    setSession(token);
+    refreshUser()
+      .catch(() => null)
+      .finally(() => {
+        toast.success('Google login successful!');
+        navigate('/', { replace: true });
+      });
+  }, [navigate, refreshUser, searchParams, setSession]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -142,44 +167,6 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
-
-  // =========================
-  // GOOGLE LOGIN
-  // =========================
-const handleGoogleSuccess = useCallback(async (credentialResponse) => {
-  if (!credentialResponse?.credential) {
-    toast.error('Google credential not received');
-    return;
-  }
-
-  setGoogleLoading(true);
-
-  try {
-    const response = await api.post('/api/auth/google', {
-      token: credentialResponse.credential,
-    });
-
-    setSession(
-      response.data.access_token || response.data.token,
-      response.data.user || null
-    );
-    await refreshUser().catch(() => null);
-
-    toast.success('Google login successful!');
-    navigate('/');
-  } catch (error) {
-    console.error('Google auth error:', error);
-    console.error('Backend response:', error.response?.data);
-
-    toast.error(
-      error.response?.data?.detail ||
-        error.response?.data?.message ||
-        'Google authentication failed'
-    );
-  } finally {
-    setGoogleLoading(false);
-  }
-}, [navigate, refreshUser, setSession]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
@@ -384,20 +371,13 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
           </div>
 
           <div className="flex justify-center">
-            {googleLoading ? (
-              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : !googleClientId ? (
-              <div className="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-300">
-                Google login is unavailable because `VITE_GOOGLE_CLIENT_ID` is missing in the frontend deployment settings.
-              </div>
-            ) : (
-              <GoogleSignInButton
-                clientId={googleClientId}
-                onSuccess={handleGoogleSuccess}
-                onError={() => toast.error('Google Login Failed')}
-                text={isLogin ? 'signin_with' : 'signup_with'}
-              />
-            )}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="flex min-h-10 w-full items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-100"
+            >
+              {isLogin ? 'Sign in with Google' : 'Sign up with Google'}
+            </button>
           </div>
         </div>
       </div>

@@ -1,13 +1,17 @@
 import os
 import random
 import smtplib
+from urllib.parse import urlencode
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, Request, status, Depends
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
+from google_auth_oauthlib.flow import Flow
+from jose import JWTError, jwt
 
 from ..schemas import UserCreate, UserLogin, Token, GoogleAuthRequest
 from ..auth import (
@@ -15,6 +19,7 @@ from ..auth import (
     verify_password,
     verify_google_token,
     create_access_token,
+    ALGORITHM,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from ..database import users_collection, otp_collection
@@ -26,6 +31,15 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
+BACKEND_URL = os.getenv("BACKEND_URL") or os.getenv("RENDER_EXTERNAL_URL")
+OAUTH_STATE_SECRET = os.getenv("OAUTH_STATE_SECRET") or os.getenv("JWT_SECRET", "supersecretkey")
+GOOGLE_SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+]
 
 
 # =========================
@@ -57,6 +71,70 @@ If you did not request this, please ignore this email.
             server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send OTP email: {str(e)}")
+
+
+def get_google_redirect_uri(request: Request) -> str:
+    if BACKEND_URL:
+        return f"{BACKEND_URL.rstrip('/')}/api/auth/google/callback"
+
+    return str(request.url_for("google_auth_callback"))
+
+
+def create_google_oauth_flow(request: Request) -> Flow:
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=500,
+            detail="Google OAuth is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET on the backend.",
+        )
+
+    return Flow.from_client_config(
+        {
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=GOOGLE_SCOPES,
+        redirect_uri=get_google_redirect_uri(request),
+    )
+
+
+def frontend_redirect(params: dict) -> RedirectResponse:
+    return RedirectResponse(f"{FRONTEND_URL}/auth?{urlencode(params)}")
+
+
+def upsert_google_user(idinfo: dict):
+    email = idinfo.get("email")
+    name = idinfo.get("name")
+    picture = idinfo.get("picture")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid Google account")
+
+    user = users_collection.find_one({"email": email.lower()})
+
+    if not user:
+        user_dict = {
+            "name": name,
+            "email": email.lower(),
+            "password": None,
+            "created_at": datetime.utcnow(),
+            "provider": "google",
+            "picture": picture,
+            "plan": "free",
+        }
+        users_collection.insert_one(user_dict)
+        user = users_collection.find_one({"email": email.lower()})
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": email.lower()},
+        expires_delta=access_token_expires
+    )
+
+    return access_token, user
 
 
 # =========================
@@ -180,6 +258,54 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
 # =========================
 # GOOGLE LOGIN / REGISTER
 # =========================
+@router.get("/google")
+def google_login(request: Request):
+    flow = create_google_oauth_flow(request)
+    state = jwt.encode(
+        {
+            "purpose": "google_oauth",
+            "exp": datetime.utcnow() + timedelta(minutes=10),
+        },
+        OAUTH_STATE_SECRET,
+        algorithm=ALGORITHM,
+    )
+    authorization_url, _ = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true",
+        prompt="select_account",
+        state=state,
+    )
+
+    return RedirectResponse(authorization_url)
+
+
+@router.get("/google/callback", name="google_auth_callback")
+def google_auth_callback(request: Request, code: str | None = None, state: str | None = None, error: str | None = None):
+    if error:
+        return frontend_redirect({"error": "Google authentication was cancelled."})
+
+    if not code or not state:
+        return frontend_redirect({"error": "Google authentication failed."})
+
+    try:
+        state_payload = jwt.decode(state, OAUTH_STATE_SECRET, algorithms=[ALGORITHM])
+        if state_payload.get("purpose") != "google_oauth":
+            raise JWTError("Invalid OAuth state")
+
+        flow = create_google_oauth_flow(request)
+        flow.fetch_token(code=code)
+        idinfo = verify_google_token(flow.credentials.id_token)
+
+        if not idinfo:
+            return frontend_redirect({"error": "Invalid Google account."})
+
+        access_token, _ = upsert_google_user(idinfo)
+        return frontend_redirect({"token": access_token})
+    except Exception as exc:
+        print(f"Google OAuth callback error: {exc}")
+        return frontend_redirect({"error": "Google authentication failed."})
+
+
 @router.post("/google")
 def google_auth(data: GoogleAuthRequest):
     try:
@@ -189,36 +315,7 @@ def google_auth(data: GoogleAuthRequest):
         if not idinfo:
             raise HTTPException(status_code=400, detail="Invalid Google token")
 
-        email = idinfo.get("email")
-        name = idinfo.get("name")
-        picture = idinfo.get("picture")
-
-        if not email:
-            raise HTTPException(status_code=400, detail="Invalid Google account")
-
-        # Check if user exists
-        user = users_collection.find_one({"email": email.lower()})
-
-        if not user:
-            # Auto-register Google user
-            user_dict = {
-                "name": name,
-                "email": email.lower(),
-                "password": None,
-                "created_at": datetime.utcnow(),
-                "provider": "google",
-                "picture": picture,
-                "plan": "free",
-            }
-            users_collection.insert_one(user_dict)
-            user = users_collection.find_one({"email": email.lower()})
-
-        # Create JWT token
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": email.lower()},
-            expires_delta=access_token_expires
-        )
+        access_token, user = upsert_google_user(idinfo)
 
         return {
             "access_token": access_token,
