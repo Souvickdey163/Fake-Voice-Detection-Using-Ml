@@ -32,6 +32,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
+EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -48,13 +50,7 @@ GOOGLE_SCOPES = [
 # =========================
 # HELPER: SEND EMAIL OTP
 # =========================
-def send_email_otp(receiver_email: str, otp: str):
-    if not EMAIL_USER or not EMAIL_PASS:
-        raise HTTPException(
-            status_code=500,
-            detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
-        )
-
+def build_otp_email(otp: str):
     subject = "Your NeuroVoice OTP Code"
     body = f"""
 Hello,
@@ -67,6 +63,46 @@ If you did not request this, please ignore this email.
 
 - NeuroVoice Team
 """
+
+    return subject, body
+
+
+def send_email_with_resend(receiver_email: str, subject: str, body: str):
+    if not RESEND_API_KEY or not EMAIL_FROM:
+        return False
+
+    response = requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {RESEND_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "from": EMAIL_FROM,
+            "to": [receiver_email],
+            "subject": subject,
+            "text": body,
+        },
+        timeout=20,
+    )
+
+    if response.status_code >= 400:
+        print(
+            f"Resend OTP email failed for {receiver_email}: "
+            f"{response.status_code} {response.text}",
+            flush=True,
+        )
+        response.raise_for_status()
+
+    return True
+
+
+def send_email_with_smtp(receiver_email: str, subject: str, body: str):
+    if not EMAIL_USER or not EMAIL_PASS:
+        raise HTTPException(
+            status_code=500,
+            detail="Email OTP is not configured. Set RESEND_API_KEY/EMAIL_FROM or EMAIL_USER/EMAIL_PASS on the backend."
+        )
 
     msg = MIMEText(body)
     msg["Subject"] = subject
@@ -96,8 +132,25 @@ If you did not request this, please ignore this email.
     print(f"OTP email failed for {receiver_email}: {' | '.join(smtp_errors)}", flush=True)
     raise HTTPException(
         status_code=500,
-        detail="Failed to send OTP email. Check EMAIL_USER/EMAIL_PASS app password and SMTP access."
+        detail="Failed to send OTP email. Render cannot reach SMTP from this service; configure RESEND_API_KEY and EMAIL_FROM."
     )
+
+
+def send_email_otp(receiver_email: str, otp: str):
+    subject, body = build_otp_email(otp)
+
+    if RESEND_API_KEY:
+        try:
+            if send_email_with_resend(receiver_email, subject, body):
+                return
+        except Exception as e:
+            print(f"OTP email API failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to send OTP email through email API. Check RESEND_API_KEY and EMAIL_FROM."
+            )
+
+    send_email_with_smtp(receiver_email, subject, body)
 
 
 def get_google_redirect_uri(request: Request) -> str:
