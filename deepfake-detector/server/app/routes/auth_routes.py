@@ -32,8 +32,10 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
-EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+EMAIL_FROM = os.getenv("EMAIL_FROM") or (
+    "NeuroVoice <onboarding@resend.dev>" if RESEND_API_KEY else EMAIL_USER
+)
 SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -87,12 +89,16 @@ def send_email_with_resend(receiver_email: str, subject: str, body: str):
     )
 
     if response.status_code >= 400:
+        error_detail = response.text[:500]
         print(
             f"Resend OTP email failed for {receiver_email}: "
-            f"{response.status_code} {response.text}",
+            f"{response.status_code} {error_detail}",
             flush=True,
         )
-        response.raise_for_status()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Resend email failed ({response.status_code}): {error_detail}"
+        )
 
     return True
 
@@ -145,6 +151,8 @@ def send_email_otp(receiver_email: str, otp: str):
                 return
         except Exception as e:
             print(f"OTP email API failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
+            if isinstance(e, HTTPException):
+                raise e
             raise HTTPException(
                 status_code=500,
                 detail="Failed to send OTP email through email API. Check RESEND_API_KEY and EMAIL_FROM."
