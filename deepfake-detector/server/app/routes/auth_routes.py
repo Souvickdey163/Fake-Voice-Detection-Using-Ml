@@ -32,6 +32,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
+SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
@@ -48,6 +49,12 @@ GOOGLE_SCOPES = [
 # HELPER: SEND EMAIL OTP
 # =========================
 def send_email_otp(receiver_email: str, otp: str):
+    if not EMAIL_USER or not EMAIL_PASS:
+        raise HTTPException(
+            status_code=500,
+            detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
+        )
+
     subject = "Your NeuroVoice OTP Code"
     body = f"""
 Hello,
@@ -66,13 +73,31 @@ If you did not request this, please ignore this email.
     msg["From"] = EMAIL_USER
     msg["To"] = receiver_email
 
+    email_password = EMAIL_PASS.strip()
+    smtp_errors = []
+
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(EMAIL_USER, EMAIL_PASS)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=SMTP_TIMEOUT_SECONDS) as server:
+            server.login(EMAIL_USER, email_password)
             server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+            return
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send OTP email: {str(e)}")
+        smtp_errors.append(f"SSL/465: {type(e).__name__}: {str(e)}")
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=SMTP_TIMEOUT_SECONDS) as server:
+            server.starttls()
+            server.login(EMAIL_USER, email_password)
+            server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+            return
+    except Exception as e:
+        smtp_errors.append(f"STARTTLS/587: {type(e).__name__}: {str(e)}")
+
+    print(f"OTP email failed for {receiver_email}: {' | '.join(smtp_errors)}", flush=True)
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to send OTP email. Check EMAIL_USER/EMAIL_PASS app password and SMTP access."
+    )
 
 
 def get_google_redirect_uri(request: Request) -> str:
@@ -182,7 +207,7 @@ def send_otp(data: dict):
 
     # Validate email format
     try:
-        valid = validate_email(email)
+        valid = validate_email(email, check_deliverability=False)
         email = valid.email
     except EmailNotValidError as e:
         raise HTTPException(status_code=400, detail=str(e))
