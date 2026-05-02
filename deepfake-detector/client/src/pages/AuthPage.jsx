@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -12,7 +12,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { GoogleLogin } from '@react-oauth/google';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import api from '../services/api';
 import { useUser } from '../hooks/useUser';
 
@@ -180,23 +180,6 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
     setGoogleLoading(false);
   }
 }, [navigate, refreshUser, setSession]);
-
-  const googleButton = useMemo(() => {
-    if (!googleClientId) {
-      return null;
-    }
-
-    return (
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={() => toast.error('Google Login Failed')}
-        theme="filled_black"
-        shape="pill"
-        size="large"
-        text={isLogin ? "signin_with" : "signup_with"}
-      />
-    );
-  }, [googleClientId, handleGoogleSuccess, isLogin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
@@ -408,7 +391,12 @@ const handleGoogleSuccess = useCallback(async (credentialResponse) => {
                 Google login is unavailable because `VITE_GOOGLE_CLIENT_ID` is missing in the frontend deployment settings.
               </div>
             ) : (
-              googleButton
+              <GoogleSignInButton
+                clientId={googleClientId}
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error('Google Login Failed')}
+                text={isLogin ? 'signin_with' : 'signup_with'}
+              />
             )}
           </div>
         </div>
