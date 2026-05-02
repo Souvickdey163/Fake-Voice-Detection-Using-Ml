@@ -1,5 +1,6 @@
 import os
 import random
+import secrets
 import smtplib
 from urllib.parse import urlencode
 
@@ -86,7 +87,7 @@ def get_google_redirect_uri(request: Request) -> str:
     return str(request.url_for("google_auth_callback"))
 
 
-def create_google_oauth_flow(request: Request) -> Flow:
+def create_google_oauth_flow(request: Request, code_verifier: str | None = None) -> Flow:
     if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
         raise HTTPException(
             status_code=500,
@@ -104,6 +105,7 @@ def create_google_oauth_flow(request: Request) -> Flow:
         },
         scopes=GOOGLE_SCOPES,
         redirect_uri=get_google_redirect_uri(request),
+        code_verifier=code_verifier,
     )
 
 
@@ -291,10 +293,12 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
 # =========================
 @router.get("/google")
 def google_login(request: Request):
-    flow = create_google_oauth_flow(request)
+    code_verifier = secrets.token_urlsafe(64)
+    flow = create_google_oauth_flow(request, code_verifier=code_verifier)
     state = jwt.encode(
         {
             "purpose": "google_oauth",
+            "code_verifier": code_verifier,
             "exp": datetime.utcnow() + timedelta(minutes=10),
         },
         OAUTH_STATE_SECRET,
@@ -323,7 +327,11 @@ def google_auth_callback(request: Request, code: str | None = None, state: str |
         if state_payload.get("purpose") != "google_oauth":
             raise JWTError("Invalid OAuth state")
 
-        flow = create_google_oauth_flow(request)
+        code_verifier = state_payload.get("code_verifier")
+        if not code_verifier:
+            raise JWTError("Missing OAuth code verifier")
+
+        flow = create_google_oauth_flow(request, code_verifier=code_verifier)
         flow.fetch_token(code=code)
         idinfo = get_google_user_info(flow.credentials)
 
