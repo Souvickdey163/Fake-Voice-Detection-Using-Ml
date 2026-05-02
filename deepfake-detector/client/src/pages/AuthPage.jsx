@@ -40,9 +40,10 @@ export default function AuthPage() {
   useEffect(() => {
     const token = searchParams.get('token');
     const error = searchParams.get('error');
+    const code = searchParams.get('code');
 
     if (error) {
-      toast.error(error);
+      toast.error(code ? `${error} (${code})` : error);
       navigate('/auth', { replace: true });
       return;
     }

@@ -6,9 +6,7 @@ import uuid
 
 from ..dependencies import get_current_user
 from ..database import predictions_collection
-from ..model_loader import predict
 from ..plan_utils import build_credit_summary
-from ..utils import convert_to_wav, extract_features_safe
 
 router = APIRouter(prefix="/api", tags=["predict"])
 
@@ -61,6 +59,9 @@ async def run_prediction(
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
+    from ..model_loader import predict
+    from ..utils import convert_to_wav, extract_features_safe
+
     file_path = None
     wav_path = None
     request_start = time.perf_counter()

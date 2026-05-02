@@ -3,6 +3,7 @@ import random
 import smtplib
 from urllib.parse import urlencode
 
+import requests
 from fastapi import APIRouter, HTTPException, Request, status, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -37,8 +38,8 @@ BACKEND_URL = os.getenv("BACKEND_URL") or os.getenv("RENDER_EXTERNAL_URL")
 OAUTH_STATE_SECRET = os.getenv("OAUTH_STATE_SECRET") or os.getenv("JWT_SECRET", "supersecretkey")
 GOOGLE_SCOPES = [
     "openid",
-    "https://www.googleapis.com/auth/userinfo.email",
-    "https://www.googleapis.com/auth/userinfo.profile",
+    "email",
+    "profile",
 ]
 
 
@@ -77,6 +78,11 @@ def get_google_redirect_uri(request: Request) -> str:
     if BACKEND_URL:
         return f"{BACKEND_URL.rstrip('/')}/api/auth/google/callback"
 
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if forwarded_proto and forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}/api/auth/google/callback"
+
     return str(request.url_for("google_auth_callback"))
 
 
@@ -102,7 +108,32 @@ def create_google_oauth_flow(request: Request) -> Flow:
 
 
 def frontend_redirect(params: dict) -> RedirectResponse:
-    return RedirectResponse(f"{FRONTEND_URL}/auth?{urlencode(params)}")
+    return RedirectResponse(f"{FRONTEND_URL}/auth?{urlencode(params)}", status_code=302)
+
+
+def google_error(message: str, code: str) -> RedirectResponse:
+    return frontend_redirect({"error": message, "code": code})
+
+
+def get_google_user_info(credentials):
+    if credentials.id_token:
+        idinfo = verify_google_token(credentials.id_token)
+        if idinfo:
+            return idinfo
+
+    response = requests.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        headers={"Authorization": f"Bearer {credentials.token}"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    profile = response.json()
+
+    return {
+        "email": profile.get("email"),
+        "name": profile.get("name"),
+        "picture": profile.get("picture"),
+    }
 
 
 def upsert_google_user(idinfo: dict):
@@ -276,16 +307,16 @@ def google_login(request: Request):
         state=state,
     )
 
-    return RedirectResponse(authorization_url)
+    return RedirectResponse(authorization_url, status_code=302)
 
 
 @router.get("/google/callback", name="google_auth_callback")
 def google_auth_callback(request: Request, code: str | None = None, state: str | None = None, error: str | None = None):
     if error:
-        return frontend_redirect({"error": "Google authentication was cancelled."})
+        return google_error("Google authentication was cancelled.", "google_cancelled")
 
     if not code or not state:
-        return frontend_redirect({"error": "Google authentication failed."})
+        return google_error("Google authentication failed.", "missing_code_or_state")
 
     try:
         state_payload = jwt.decode(state, OAUTH_STATE_SECRET, algorithms=[ALGORITHM])
@@ -294,16 +325,19 @@ def google_auth_callback(request: Request, code: str | None = None, state: str |
 
         flow = create_google_oauth_flow(request)
         flow.fetch_token(code=code)
-        idinfo = verify_google_token(flow.credentials.id_token)
+        idinfo = get_google_user_info(flow.credentials)
 
         if not idinfo:
-            return frontend_redirect({"error": "Invalid Google account."})
+            return google_error("Invalid Google account.", "invalid_google_account")
 
         access_token, _ = upsert_google_user(idinfo)
         return frontend_redirect({"token": access_token})
+    except JWTError as exc:
+        print(f"Google OAuth state error: {repr(exc)}", flush=True)
+        return google_error("Google authentication expired. Please try again.", "invalid_state")
     except Exception as exc:
-        print(f"Google OAuth callback error: {exc}")
-        return frontend_redirect({"error": "Google authentication failed."})
+        print(f"Google OAuth callback error: {type(exc).__name__}: {repr(exc)}", flush=True)
+        return google_error("Google authentication failed.", "google_callback_failed")
 
 
 @router.post("/google")
