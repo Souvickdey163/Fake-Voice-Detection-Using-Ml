@@ -39,8 +39,8 @@ BACKEND_URL = os.getenv("BACKEND_URL") or os.getenv("RENDER_EXTERNAL_URL")
 OAUTH_STATE_SECRET = os.getenv("OAUTH_STATE_SECRET") or os.getenv("JWT_SECRET", "supersecretkey")
 GOOGLE_SCOPES = [
     "openid",
-    "email",
-    "profile",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
 ]
 
 
@@ -306,7 +306,6 @@ def google_login(request: Request):
     )
     authorization_url, _ = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true",
         prompt="select_account",
         state=state,
     )
