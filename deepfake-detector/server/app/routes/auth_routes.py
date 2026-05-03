@@ -2,6 +2,7 @@ import os
 import random
 import secrets
 import smtplib
+import time
 from urllib.parse import urlencode
 
 import requests
@@ -261,10 +262,13 @@ def upsert_google_user(idinfo: dict):
 # =========================
 @router.post("/send-otp")
 def send_otp(data: dict):
+    request_start = time.perf_counter()
     email = data.get("email", "").strip().lower()
 
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
+
+    print(f"[otp] send request started for {email}", flush=True)
 
     # Validate email format
     try:
@@ -274,7 +278,9 @@ def send_otp(data: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Check already registered
+    step_start = time.perf_counter()
     existing_user = users_collection.find_one({"email": email})
+    print(f"[otp] existing user check done in {time.perf_counter() - step_start:.2f}s", flush=True)
     if existing_user:
         raise HTTPException(status_code=400, detail="Email is already registered")
 
@@ -282,6 +288,7 @@ def send_otp(data: dict):
     expires_at = datetime.utcnow() + timedelta(minutes=5)
 
     # Delete old OTPs for same email
+    step_start = time.perf_counter()
     otp_collection.delete_many({"email": email})
 
     otp_collection.insert_one({
@@ -290,8 +297,15 @@ def send_otp(data: dict):
         "expires_at": expires_at,
         "verified": False
     })
+    print(f"[otp] otp stored in {time.perf_counter() - step_start:.2f}s", flush=True)
 
+    step_start = time.perf_counter()
     send_email_otp(email, otp)
+    print(
+        f"[otp] email sent in {time.perf_counter() - step_start:.2f}s "
+        f"(total {time.perf_counter() - request_start:.2f}s)",
+        flush=True
+    )
 
     return {"message": "OTP sent successfully"}
 

@@ -33,6 +33,9 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const { setSession, refreshUser } = useUser();
 
+  const normalizedEmail = formData.email.trim().toLowerCase();
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+
   const handleGoogleLogin = () => {
     window.location.href = `${API_URL}/api/auth/google`;
   };
@@ -77,17 +80,28 @@ export default function AuthPage() {
   // SEND OTP
   // =========================
   const handleSendOtp = async () => {
-    if (!formData.email) {
+    if (!normalizedEmail) {
       toast.error('Please enter your email first.');
+      return;
+    }
+
+    if (!isValidEmail) {
+      toast.error('Please enter a valid email address.');
       return;
     }
 
     try {
       setOtpLoading(true);
 
-      await api.post('/api/auth/send-otp', {
-        email: formData.email,
-      });
+      await api.post(
+        '/api/auth/send-otp',
+        {
+          email: normalizedEmail,
+        },
+        {
+          timeout: 30000,
+        }
+      );
 
       toast.success('OTP sent to your email!');
       setOtpSent(true);
@@ -98,7 +112,9 @@ export default function AuthPage() {
       toast.error(
         error.response?.data?.detail ||
           error.response?.data?.message ||
-          'Failed to send OTP'
+        error.code === 'ECONNABORTED'
+          ? 'OTP request timed out. Please try again in a moment.'
+          : 'Failed to send OTP'
       );
     } finally {
       setOtpLoading(false);
