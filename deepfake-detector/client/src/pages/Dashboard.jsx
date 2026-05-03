@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api, { ML_REQUEST_TIMEOUT_MS } from '../services/api';
 import UploadCard from '../components/UploadCard';
 import ResultCard from '../components/ResultCard';
 import { useUser } from '../hooks/useUser';
@@ -31,6 +31,7 @@ export default function Dashboard() {
       formData.append('file', file);
 
       const response = await api.post('/api/predict', formData, {
+        timeout: ML_REQUEST_TIMEOUT_MS,
         headers: {
           'Content-Type': 'multipart/form-data',
         },

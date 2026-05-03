@@ -7,6 +7,7 @@ import uuid
 
 from ..dependencies import get_current_user
 from ..database import predictions_collection
+from ..hf_client import is_hf_enabled, predict_with_hf
 from ..plan_utils import build_credit_summary
 
 router = APIRouter(prefix="/api", tags=["predict"])
@@ -57,16 +58,41 @@ def build_analysis_report(prediction_label: str, confidence: float, spoof_probab
     }
 
 
+def run_local_prediction(file_path):
+    from ..model_loader import predict
+    from ..utils import convert_to_wav, extract_features_safe
+
+    wav_path = None
+    try:
+        step_start = time.perf_counter()
+        wav_path = convert_to_wav(file_path)
+        print(f"[predict] convert step total {time.perf_counter() - step_start:.2f}s", flush=True)
+
+        step_start = time.perf_counter()
+        features = extract_features_safe(wav_path)
+        print(f"[predict] feature step total {time.perf_counter() - step_start:.2f}s", flush=True)
+
+        if features is None:
+            raise ValueError("Error processing audio file. Please ensure it's a valid audio format.")
+
+        step_start = time.perf_counter()
+        prediction = predict(features)
+        print(f"[predict] local inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
+        return prediction
+    finally:
+        try:
+            if wav_path and os.path.exists(wav_path):
+                os.remove(wav_path)
+        except:
+            pass
+
+
 @router.post("/predict")
 async def run_prediction(
     file: UploadFile = File(...),
     current_user: dict = Depends(get_current_user)
 ):
-    from ..model_loader import predict
-    from ..utils import convert_to_wav, extract_features_safe
-
     file_path = None
-    wav_path = None
     request_start = time.perf_counter()
 
     try:
@@ -102,26 +128,16 @@ async def run_prediction(
             flush=True
         )
 
-        # Convert uploaded file to WAV
-        step_start = time.perf_counter()
-        wav_path = convert_to_wav(file_path)
-        print(f"[predict] convert step total {time.perf_counter() - step_start:.2f}s", flush=True)
-
-        # Extract MFCC safely
-        step_start = time.perf_counter()
-        features = extract_features_safe(wav_path)
-        print(f"[predict] feature step total {time.perf_counter() - step_start:.2f}s", flush=True)
-
-        if features is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Error processing audio file. Please ensure it's a valid audio format."
-            )
-
-        # Run inference
-        step_start = time.perf_counter()
-        prediction_label, confidence, spoof_probability = predict(features)
-        print(f"[predict] inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
+        if is_hf_enabled():
+            try:
+                step_start = time.perf_counter()
+                prediction_label, confidence, spoof_probability = predict_with_hf(file_path)
+                print(f"[predict] hf inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
+            except Exception as hf_error:
+                print(f"[predict] HF failed, fallback to local: {hf_error}", flush=True)
+                prediction_label, confidence, spoof_probability = run_local_prediction(file_path)
+        else:
+            prediction_label, confidence, spoof_probability = run_local_prediction(file_path)
         analysis_report = build_analysis_report(
             prediction_label,
             confidence,
@@ -169,11 +185,5 @@ async def run_prediction(
         try:
             if file_path and os.path.exists(file_path):
                 os.remove(file_path)
-        except:
-            pass
-
-        try:
-            if wav_path and os.path.exists(wav_path):
-                os.remove(wav_path)
         except:
             pass

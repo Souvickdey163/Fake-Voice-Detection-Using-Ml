@@ -5,6 +5,7 @@ import axios from 'axios';
 const envApiUrl = import.meta.env.VITE_API_URL?.trim();
 const API_ROOT = envApiUrl || 'http://127.0.0.1:8000';
 export const API_URL = API_ROOT.replace(/\/$/, '').replace(/\/api$/, '');
+export const ML_REQUEST_TIMEOUT_MS = 300000;
 export const API_CONFIG_ERROR =
   import.meta.env.PROD && !envApiUrl
     ? 'Missing VITE_API_URL. Add it in Vercel Environment Variables and redeploy.'
@@ -18,7 +19,7 @@ if (API_CONFIG_ERROR) {
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 120000,
+  timeout: ML_REQUEST_TIMEOUT_MS,
 });
 
 // Auto attach JWT token
