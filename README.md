@@ -23,22 +23,8 @@ The backend remains the main API layer. It handles authentication, credits, hist
 
 ## Live Website
 
-Frontend website:
-
 ```text
 https://fake-voice-detection-using-ml.vercel.app
-```
-
-Backend API:
-
-```text
-https://your-render-backend.onrender.com
-```
-
-Hugging Face Space:
-
-```text
-https://your-space-name.hf.space
 ```
 
 ## Features
