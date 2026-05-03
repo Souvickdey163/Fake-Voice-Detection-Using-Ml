@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from datetime import datetime
 import os
+import tempfile
 import time
 import uuid
 
@@ -9,6 +10,8 @@ from ..database import predictions_collection
 from ..plan_utils import build_credit_summary
 
 router = APIRouter(prefix="/api", tags=["predict"])
+
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_AUDIO_UPLOAD_MB", "10")) * 1024 * 1024
 
 
 def build_analysis_report(prediction_label: str, confidence: float, spoof_probability: float):
@@ -81,10 +84,16 @@ async def run_prediction(
 
         # Save uploaded file to temp
         unique_name = f"{uuid.uuid4()}_{file.filename}"
-        file_path = f"temp_{unique_name}"
+        file_path = os.path.join(tempfile.gettempdir(), f"neurovoice_{unique_name}")
 
         step_start = time.perf_counter()
         contents = await file.read()
+        if len(contents) > MAX_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Audio file is too large. Please upload a file under {MAX_UPLOAD_BYTES // (1024 * 1024)} MB."
+            )
+
         with open(file_path, "wb") as buffer:
             buffer.write(contents)
         print(

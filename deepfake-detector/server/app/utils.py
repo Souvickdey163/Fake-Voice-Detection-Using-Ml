@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import time
 import numpy as np
@@ -16,6 +17,9 @@ N_MFCC = 40
 # CONVERT TO WAV
 # =========================
 def convert_to_wav(input_path):
+    if not shutil.which("ffmpeg"):
+        raise ValueError("ffmpeg is not installed in the deployment environment")
+
     start = time.perf_counter()
     output_path = input_path + ".wav"
 
@@ -23,8 +27,10 @@ def convert_to_wav(input_path):
         "ffmpeg",
         "-y",
         "-i", input_path,
+        "-t", str(MAX_AUDIO_LEN),
         "-ar", str(SAMPLE_RATE),
         "-ac", "1",
+        "-vn",
         output_path
     ]
 

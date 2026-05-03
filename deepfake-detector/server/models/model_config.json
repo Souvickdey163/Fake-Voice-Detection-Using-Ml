@@ -1,0 +1,9 @@
+{
+    "best_threshold": 0.3,
+    "sample_rate": 16000,
+    "max_audio_len": 4,
+    "label_map": {
+        "0": "bonafide",
+        "1": "spoof"
+    }
+}

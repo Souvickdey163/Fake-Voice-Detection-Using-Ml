@@ -45,7 +45,8 @@ temp_*
 # Ignore dataset/test wavs if needed
 # *.wav
 
-# Allow deployment model files
-# Ignore models (IMPORTANT)
-deepfake-detector/server/models/
+# Allow the deployment model used by the Render backend.
+saved_models/
 *.pth
+!deepfake-detector/server/models/
+!deepfake-detector/server/models/best_model_improved.pth
