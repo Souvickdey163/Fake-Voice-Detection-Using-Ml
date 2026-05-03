@@ -34,6 +34,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -68,7 +70,7 @@ If you did not request this, please ignore this email.
 
 
 def send_email_with_smtp(receiver_email: str, subject: str, body: str):
-    if not EMAIL_USER or not EMAIL_PASS:
+    if not os.getenv("EMAIL_USER") or not os.getenv("EMAIL_PASS"):
         raise HTTPException(
             status_code=500,
             detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
@@ -76,34 +78,28 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
 
     msg = MIMEText(body)
     msg["Subject"] = subject
-    msg["From"] = EMAIL_FROM
+    msg["From"] = os.getenv("EMAIL_FROM")
     msg["To"] = receiver_email
 
-    email_password = EMAIL_PASS.strip()
-    smtp_errors = []
-
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=SMTP_TIMEOUT_SECONDS) as server:
-            server.login(EMAIL_USER, email_password)
-            server.send_message(msg)
-            return
+        server = smtplib.SMTP(
+            os.getenv("SMTP_HOST"),
+            int(os.getenv("SMTP_PORT")),
+            timeout=10
+        )
+        server.starttls()
+        server.login(
+            os.getenv("EMAIL_USER"),
+            os.getenv("EMAIL_PASS")
+        )
+        server.send_message(msg)
+        server.quit()
     except Exception as e:
-        smtp_errors.append(f"SSL/465: {type(e).__name__}: {str(e)}")
-
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=SMTP_TIMEOUT_SECONDS) as server:
-            server.starttls()
-            server.login(EMAIL_USER, email_password)
-            server.send_message(msg)
-            return
-    except Exception as e:
-        smtp_errors.append(f"STARTTLS/587: {type(e).__name__}: {str(e)}")
-
-    print(f"OTP email failed for {receiver_email}: {' | '.join(smtp_errors)}", flush=True)
-    raise HTTPException(
-        status_code=500,
-        detail="Failed to send OTP email through Gmail SMTP. Check EMAIL_USER and EMAIL_PASS."
-    )
+        print(f"OTP email failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send OTP email. Check SMTP settings."
+        )
 
 
 def send_email_otp(receiver_email: str, otp: str):
