@@ -265,7 +265,7 @@ export default function AuthPage() {
 
               {!isLogin ? (
                 <div className="flex gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative min-w-0 flex-1">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
                       type="email"
@@ -273,6 +273,10 @@ export default function AuthPage() {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
+                      autoComplete="email"
+                      inputMode="email"
+                      spellCheck={false}
+                      title={formData.email}
                       className="glass-input"
                       placeholder="you@example.com"
                     />
@@ -281,7 +285,7 @@ export default function AuthPage() {
                   <button
                     type="button"
                     onClick={handleSendOtp}
-                    disabled={otpLoading}
+                    disabled={otpLoading || !isValidEmail}
                     className="px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all min-w-[110px]"
                   >
                     {otpLoading
@@ -300,6 +304,9 @@ export default function AuthPage() {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
+                    autoComplete="email"
+                    inputMode="email"
+                    spellCheck={false}
                     className="glass-input"
                     placeholder="you@example.com"
                   />
