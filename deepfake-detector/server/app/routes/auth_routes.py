@@ -33,10 +33,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
-RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-EMAIL_FROM = os.getenv("EMAIL_FROM") or (
-    "NeuroVoice <onboarding@resend.dev>" if RESEND_API_KEY else EMAIL_USER
-)
+EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
 SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
@@ -70,50 +67,16 @@ If you did not request this, please ignore this email.
     return subject, body
 
 
-def send_email_with_resend(receiver_email: str, subject: str, body: str):
-    if not RESEND_API_KEY or not EMAIL_FROM:
-        return False
-
-    response = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "from": EMAIL_FROM,
-            "to": [receiver_email],
-            "subject": subject,
-            "text": body,
-        },
-        timeout=20,
-    )
-
-    if response.status_code >= 400:
-        error_detail = response.text[:500]
-        print(
-            f"Resend OTP email failed for {receiver_email}: "
-            f"{response.status_code} {error_detail}",
-            flush=True,
-        )
-        raise HTTPException(
-            status_code=500,
-            detail=f"Resend email failed ({response.status_code}): {error_detail}"
-        )
-
-    return True
-
-
 def send_email_with_smtp(receiver_email: str, subject: str, body: str):
     if not EMAIL_USER or not EMAIL_PASS:
         raise HTTPException(
             status_code=500,
-            detail="Email OTP is not configured. Set RESEND_API_KEY/EMAIL_FROM or EMAIL_USER/EMAIL_PASS on the backend."
+            detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
         )
 
     msg = MIMEText(body)
     msg["Subject"] = subject
-    msg["From"] = EMAIL_USER
+    msg["From"] = EMAIL_FROM
     msg["To"] = receiver_email
 
     email_password = EMAIL_PASS.strip()
@@ -122,7 +85,7 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=SMTP_TIMEOUT_SECONDS) as server:
             server.login(EMAIL_USER, email_password)
-            server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+            server.send_message(msg)
             return
     except Exception as e:
         smtp_errors.append(f"SSL/465: {type(e).__name__}: {str(e)}")
@@ -131,7 +94,7 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=SMTP_TIMEOUT_SECONDS) as server:
             server.starttls()
             server.login(EMAIL_USER, email_password)
-            server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+            server.send_message(msg)
             return
     except Exception as e:
         smtp_errors.append(f"STARTTLS/587: {type(e).__name__}: {str(e)}")
@@ -139,26 +102,12 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
     print(f"OTP email failed for {receiver_email}: {' | '.join(smtp_errors)}", flush=True)
     raise HTTPException(
         status_code=500,
-        detail="Failed to send OTP email. Render cannot reach SMTP from this service; configure RESEND_API_KEY and EMAIL_FROM."
+        detail="Failed to send OTP email through Gmail SMTP. Check EMAIL_USER and EMAIL_PASS."
     )
 
 
 def send_email_otp(receiver_email: str, otp: str):
     subject, body = build_otp_email(otp)
-
-    if RESEND_API_KEY:
-        try:
-            if send_email_with_resend(receiver_email, subject, body):
-                return
-        except Exception as e:
-            print(f"OTP email API failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
-            if isinstance(e, HTTPException):
-                raise e
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to send OTP email through email API. Check RESEND_API_KEY and EMAIL_FROM."
-            )
-
     send_email_with_smtp(receiver_email, subject, body)
 
 
