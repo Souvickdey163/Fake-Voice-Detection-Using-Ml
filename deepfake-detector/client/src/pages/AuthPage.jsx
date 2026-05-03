@@ -12,7 +12,7 @@ import {
   KeyRound,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api, { API_URL } from '../services/api';
+import api, { API_CONFIG_ERROR, API_URL } from '../services/api';
 import { useUser } from '../hooks/useUser';
 
 export default function AuthPage() {
@@ -37,6 +37,12 @@ export default function AuthPage() {
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
 
   const handleGoogleLogin = () => {
+    if (API_CONFIG_ERROR) {
+      console.error(API_CONFIG_ERROR);
+      toast.error(API_CONFIG_ERROR);
+      return;
+    }
+
     window.location.href = `${API_URL}/api/auth/google`;
   };
 
@@ -125,7 +131,18 @@ export default function AuthPage() {
   // LOGIN / REGISTER
   // =========================
   const handleSubmit = async (e) => {
+    console.log('CLICKED');
+    console.log('LOGIN FUNCTION RUN');
+    console.log('API URL:', API_URL);
+
     e.preventDefault();
+
+    if (API_CONFIG_ERROR) {
+      console.error(API_CONFIG_ERROR);
+      toast.error(API_CONFIG_ERROR);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -366,6 +383,7 @@ export default function AuthPage() {
             {/* Submit */}
             <button
               type="submit"
+              onClick={() => console.log('LOGIN BUTTON CLICKED')}
               disabled={loading}
               className="btn-primary w-full mt-4 shadow-lg shadow-blue-600/20"
             >
