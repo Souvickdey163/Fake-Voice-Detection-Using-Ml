@@ -44,3 +44,8 @@ app.include_router(history_routes.router)
 @app.get("/")
 def read_root():
     return {"message": "Deepfake Audio Detection API is running 🚀"}
+
+
+@app.get("/health")
+def health_check():
+    return {"ok": True, "status": "running"}

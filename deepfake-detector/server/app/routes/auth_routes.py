@@ -25,7 +25,7 @@ from ..auth import (
     ALGORITHM,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from ..database import users_collection, otp_collection
+from ..database import ensure_indexes, users_collection, otp_collection
 
 load_dotenv()
 
@@ -226,6 +226,8 @@ def get_google_user_info(credentials):
 
 
 def upsert_google_user(idinfo: dict):
+    ensure_indexes()
+
     email = idinfo.get("email")
     name = idinfo.get("name")
     picture = idinfo.get("picture")
@@ -262,6 +264,8 @@ def upsert_google_user(idinfo: dict):
 # =========================
 @router.post("/send-otp")
 def send_otp(data: dict):
+    ensure_indexes()
+
     request_start = time.perf_counter()
     email = data.get("email", "").strip().lower()
 
@@ -315,6 +319,8 @@ def send_otp(data: dict):
 # =========================
 @router.post("/register")
 def register_user(user: UserCreate):
+    ensure_indexes()
+
     otp = getattr(user, "otp", None)
 
     if not otp:
