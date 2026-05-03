@@ -21,11 +21,9 @@ Local PyTorch fallback model
 
 The backend remains the main API layer. It handles authentication, credits, history, file upload validation, result formatting, and optional fallback to the local PyTorch model if Hugging Face inference is unavailable.
 
-## Live Website
+## 🌐 Live Website
 
-```text
-https://fake-voice-detection-using-ml.vercel.app
-```
+👉 [Click here to open NeuroVoice](https://fake-voice-detection-using-ml.vercel.app)
 
 ## Features
 
