@@ -70,7 +70,7 @@ If you did not request this, please ignore this email.
 
 
 def send_email_with_smtp(receiver_email: str, subject: str, body: str):
-    if not os.getenv("EMAIL_USER") or not os.getenv("EMAIL_PASS"):
+    if not EMAIL_USER or not EMAIL_PASS:
         raise HTTPException(
             status_code=500,
             detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
@@ -78,19 +78,19 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
 
     msg = MIMEText(body)
     msg["Subject"] = subject
-    msg["From"] = os.getenv("EMAIL_FROM")
+    msg["From"] = EMAIL_FROM
     msg["To"] = receiver_email
 
     try:
         server = smtplib.SMTP(
-            os.getenv("SMTP_HOST"),
-            int(os.getenv("SMTP_PORT")),
-            timeout=10
+            SMTP_HOST,
+            SMTP_PORT,
+            timeout=SMTP_TIMEOUT_SECONDS
         )
         server.starttls()
         server.login(
-            os.getenv("EMAIL_USER"),
-            os.getenv("EMAIL_PASS")
+            EMAIL_USER,
+            EMAIL_PASS
         )
         server.send_message(msg)
         server.quit()
