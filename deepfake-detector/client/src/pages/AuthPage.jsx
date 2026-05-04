@@ -105,7 +105,7 @@ export default function AuthPage() {
           email: normalizedEmail,
         },
         {
-          timeout: 30000,
+          timeout: 60000,
         }
       );
 
