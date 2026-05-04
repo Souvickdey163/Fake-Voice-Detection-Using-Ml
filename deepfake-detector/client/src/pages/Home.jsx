@@ -178,47 +178,49 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-16 pt-4 sm:space-y-20 sm:pt-6 lg:space-y-24 lg:pt-8">
+    <div className="space-y-16 pt-4 sm:space-y-20 sm:pt-6 lg:space-y-24 lg:pt-10">
       <section className="section-shell">
-        <div className="premium-card overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:px-14 lg:py-14">
-          <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="max-w-2xl">
+        <div className="premium-card relative overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-12 xl:px-14">
+          <div className="absolute inset-y-0 left-0 hidden w-1/2 bg-gradient-to-r from-blue-500/8 to-transparent lg:block" />
+          <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-violet-500/10 to-transparent lg:block" />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12 xl:gap-16">
+            <div className="max-w-2xl lg:py-6">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200">
                 <Sparkles className="h-4 w-4" />
                 Premium deepfake audio detection experience
               </div>
-              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="max-w-[11ch] text-4xl font-semibold leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-[4.5rem]">
                 Detect Fake Voices Instantly
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-[36rem] text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 NeuroVoice helps individuals and teams analyze suspicious audio, surface spoofing risk, and act with more confidence using AI-powered voice authentication checks.
               </p>
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 px-6 py-4 text-base font-medium text-white shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02]">
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+                <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 px-6 py-4 text-base font-medium text-white shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] lg:min-w-[11rem]">
                   Try Now
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link to="/pricing" className="btn-ghost inline-flex items-center justify-center">
+                <Link to="/pricing" className="btn-ghost inline-flex items-center justify-center lg:min-w-[11rem]">
                   View Pricing
                 </Link>
               </div>
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
                 {metrics.map((metric) => (
-                  <div key={metric.label} className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-                    <div className="text-2xl font-semibold text-white">{metric.value}</div>
-                    <div className="mt-1 text-sm text-slate-400">{metric.label}</div>
+                  <div key={metric.label} className="rounded-[24px] border border-white/10 bg-slate-950/45 px-5 py-5 backdrop-blur-sm">
+                    <div className="text-2xl font-semibold text-white lg:text-[2rem]">{metric.value}</div>
+                    <div className="mt-1 max-w-[14ch] text-sm leading-6 text-slate-400">{metric.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-blue-500/20 to-violet-500/20 blur-2xl" />
-              <div className="relative rounded-[32px] border border-white/10 bg-slate-950/80 p-4 shadow-2xl">
+            <div className="relative lg:pl-4 xl:pl-8">
+              <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-blue-500/20 to-violet-500/20 blur-2xl lg:-inset-6" />
+              <div className="relative rounded-[32px] border border-white/10 bg-slate-950/85 p-4 shadow-2xl lg:p-5">
                 <img
                   src={heroImage}
                   alt="NeuroVoice dashboard preview"
-                  className="h-full w-full rounded-[24px] object-cover"
+                  className="h-[28rem] w-full rounded-[24px] object-cover lg:h-[40rem]"
                 />
               </div>
             </div>
