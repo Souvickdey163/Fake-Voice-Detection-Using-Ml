@@ -120,7 +120,7 @@ export default function ProfileMenu() {
 
       {open && (
         <div
-          className="absolute right-0 top-[calc(100%+0.85rem)] z-50 w-[min(22rem,calc(100vw-2rem))] animate-fade-in-down overflow-hidden rounded-[24px] border border-white/12 bg-slate-950/85 shadow-[0_30px_80px_rgba(15,23,42,0.65)] backdrop-blur-2xl"
+          className="fixed left-4 right-4 top-24 z-50 max-h-[calc(100vh-7rem)] animate-fade-in-down overflow-y-auto rounded-[24px] border border-white/12 bg-slate-950/85 shadow-[0_30px_80px_rgba(15,23,42,0.65)] backdrop-blur-2xl sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.85rem)] sm:max-h-none sm:w-[min(22rem,calc(100vw-2rem))] sm:overflow-visible"
         >
             <div className="border-b border-white/10 bg-gradient-to-br from-blue-500/18 via-slate-900/40 to-violet-500/18 p-5">
               <div className="flex items-start gap-4">
