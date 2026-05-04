@@ -163,15 +163,15 @@ export default function ResultCard({ result, loading }) {
   }
 
   return (
-    <div className="glass-panel p-6 sm:p-8 h-full overflow-hidden">
-      <div ref={reportRef} className="rounded-[28px] border border-white/10 bg-slate-950/80 p-6 sm:p-8 overflow-hidden">
+    <div className="glass-panel h-full overflow-hidden p-5 sm:p-8">
+      <div ref={reportRef} className="overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col gap-4 border-b border-white/10 pb-6 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200">
               <FileText className="h-4 w-4" />
               Analysis Report
             </div>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Audio Authenticity Review</h2>
+            <h2 className="mt-4 text-2xl font-semibold text-white sm:text-3xl">Audio Authenticity Review</h2>
             <p className="mt-3 text-slate-300">
               Structured model output for your uploaded audio sample.
             </p>
@@ -194,7 +194,7 @@ export default function ResultCard({ result, loading }) {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm uppercase tracking-[0.25em] text-slate-400">Authenticity Score</p>
-                <div className={`mt-4 text-6xl font-semibold tracking-tight ${isFake ? 'text-red-400' : 'text-green-400'}`}>
+                <div className={`mt-4 text-5xl font-semibold tracking-tight sm:text-6xl ${isFake ? 'text-red-400' : 'text-green-400'}`}>
                   {report.score.toFixed(0)}%
                 </div>
                 <div className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm ${
@@ -218,7 +218,7 @@ export default function ResultCard({ result, loading }) {
               <Sparkles className="h-5 w-5" />
               <h3 className="text-lg font-semibold text-white">Summary Report</h3>
             </div>
-            <p className="mt-4 leading-8 text-slate-300">{report.summary}</p>
+            <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base sm:leading-8">{report.summary}</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4">
                 <div className="text-sm text-slate-400">Model Confidence</div>
@@ -278,15 +278,15 @@ export default function ResultCard({ result, loading }) {
             <div className="mt-6 space-y-5">
               <div>
                 <h4 className="text-sm uppercase tracking-[0.2em] text-slate-400">Vocal Consistency</h4>
-                <p className="mt-2 leading-7 text-slate-300">{report.details.vocalConsistency}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">{report.details.vocalConsistency}</p>
               </div>
               <div>
                 <h4 className="text-sm uppercase tracking-[0.2em] text-slate-400">Background Noise Analysis</h4>
-                <p className="mt-2 leading-7 text-slate-300">{report.details.backgroundNoise}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">{report.details.backgroundNoise}</p>
               </div>
               <div>
                 <h4 className="text-sm uppercase tracking-[0.2em] text-slate-400">Spectrogram Analysis</h4>
-                <p className="mt-2 leading-7 text-slate-300">{report.details.spectrogram}</p>
+                <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">{report.details.spectrogram}</p>
               </div>
             </div>
           </div>

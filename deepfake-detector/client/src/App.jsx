@@ -10,7 +10,7 @@ import Settings from './pages/Settings';
 import Navbar from './components/Navbar';
 import { UserProvider } from './context/UserContext';
 
-const AppShell = ({ children, contentClassName = 'pt-28 pb-16' }) => (
+const AppShell = ({ children, contentClassName = 'pt-24 pb-12 sm:pt-28 sm:pb-16' }) => (
   <div className="min-h-screen flex flex-col relative overflow-hidden">
     <Navbar />
     <main className={`flex-1 z-10 ${contentClassName}`}>{children}</main>
@@ -30,8 +30,8 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/auth" />;
   }
   return (
-    <AppShell contentClassName="pt-28 pb-12">
-      <div className="flex-1 p-6 z-10">
+    <AppShell contentClassName="pt-24 pb-10 sm:pt-28 sm:pb-12">
+      <div className="z-10 flex-1 px-4 py-4 sm:p-6">
         {children}
       </div>
     </AppShell>
@@ -47,7 +47,7 @@ function App() {
           <Route
             path="/"
             element={
-              <AppShell contentClassName="pt-28">
+              <AppShell contentClassName="pt-24 sm:pt-28">
                 <Home />
               </AppShell>
             }
@@ -55,7 +55,7 @@ function App() {
           <Route
             path="/about"
             element={
-              <AppShell contentClassName="pt-28">
+              <AppShell contentClassName="pt-24 sm:pt-28">
                 <About />
               </AppShell>
             }

@@ -81,6 +81,7 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
     msg["From"] = EMAIL_FROM
     msg["To"] = receiver_email
 
+    server = None
     try:
         server = smtplib.SMTP(
             SMTP_HOST,
@@ -88,18 +89,23 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
             timeout=SMTP_TIMEOUT_SECONDS
         )
         server.starttls()
-        server.login(
-            EMAIL_USER,
-            EMAIL_PASS
-        )
+        server.login(EMAIL_USER, EMAIL_PASS)
+        print("LOGIN OK", flush=True)
         server.send_message(msg)
-        server.quit()
+        print("SEND OK", flush=True)
     except Exception as e:
+        print(f"SMTP ERROR: {str(e)}", flush=True)
         print(f"OTP email failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to send OTP email. Check SMTP settings."
         )
+    finally:
+        if server is not None:
+            try:
+                server.quit()
+            except Exception as close_error:
+                print(f"SMTP QUIT ERROR: {str(close_error)}", flush=True)
 
 
 def send_email_otp(receiver_email: str, otp: str):

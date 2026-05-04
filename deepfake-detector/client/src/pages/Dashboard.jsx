@@ -56,16 +56,16 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       {user && (
-        <div className="mb-10 text-center animate-fade-in-up">
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <div className="mb-8 text-center animate-fade-in-up sm:mb-10">
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">
             Welcome back, <span className="text-blue-400">{user.name.split(' ')[0]}</span>
           </h1>
-          <p className="mt-4 text-lg text-gray-400">
+          <p className="mt-4 text-base text-gray-400 sm:text-lg">
             Upload an audio sample to analyze its authenticity using our powerful Deep Learning Model.
           </p>
-          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-5 py-2 text-sm text-slate-200">
+          <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-200 sm:rounded-full sm:px-5 sm:py-2">
             <span>{user.credits.left} credits left</span>
             <span className="h-1 w-1 rounded-full bg-slate-500" />
             <span>

@@ -203,28 +203,28 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-950 px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-950 px-4 py-6 sm:px-6">
       {/* Background blobs */}
       <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob"></div>
       <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob animation-delay-2000"></div>
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-blob animation-delay-4000"></div>
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-md sm:max-w-lg">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="bg-gray-800/80 p-4 rounded-2xl inline-block shadow-2xl border border-gray-700 backdrop-blur-md mb-4">
-            <ShieldCheck className="w-12 h-12 text-blue-500" />
+        <div className="mb-8 text-center sm:mb-10">
+          <div className="mb-4 inline-block rounded-2xl border border-gray-700 bg-gray-800/80 p-3 shadow-2xl backdrop-blur-md sm:p-4">
+            <ShieldCheck className="h-10 w-10 text-blue-500 sm:h-12 sm:w-12" />
           </div>
-          <h1 className="text-5xl font-extrabold text-white tracking-tight">
+          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
             NeuroVoice
           </h1>
-          <p className="text-gray-400 mt-3 text-lg">
+          <p className="mt-3 text-base text-gray-400 sm:text-lg">
             NeuroVoice platform
           </p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-panel p-8 md:p-10 backdrop-blur-xl">
+        <div className="glass-panel p-5 backdrop-blur-xl sm:p-8 md:p-10">
           {/* Toggle */}
           <div className="flex bg-gray-900/50 p-1 rounded-xl mb-8 border border-gray-700/50">
             <button
@@ -281,7 +281,7 @@ export default function AuthPage() {
               </label>
 
               {!isLogin ? (
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
                   <div className="relative min-w-0 flex-1">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
@@ -303,7 +303,7 @@ export default function AuthPage() {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={otpLoading || !isValidEmail}
-                    className="px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all min-w-[110px]"
+                    className="min-h-[48px] rounded-xl bg-blue-600 px-4 font-medium text-white transition-all hover:bg-blue-700 sm:min-w-[130px]"
                   >
                     {otpLoading
                       ? 'Sending...'
@@ -406,7 +406,7 @@ export default function AuthPage() {
           {/* Divider */}
           <div className="my-6 flex items-center">
             <div className="flex-grow border-t border-gray-700"></div>
-            <span className="mx-4 text-sm text-gray-400">
+            <span className="mx-3 text-center text-xs text-gray-400 sm:mx-4 sm:text-sm">
               {isLogin ? "OR CONTINUE WITH" : "OR SIGN UP WITH"}
             </span>
             <div className="flex-grow border-t border-gray-700"></div>

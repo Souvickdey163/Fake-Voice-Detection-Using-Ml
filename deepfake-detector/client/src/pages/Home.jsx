@@ -178,19 +178,19 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-24 pt-8">
+    <div className="space-y-16 pt-4 sm:space-y-20 sm:pt-6 lg:space-y-24 lg:pt-8">
       <section className="section-shell">
-        <div className="premium-card overflow-hidden px-6 py-14 sm:px-10 lg:px-14">
+        <div className="premium-card overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:px-14 lg:py-14">
           <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="max-w-2xl">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200">
                 <Sparkles className="h-4 w-4" />
                 Premium deepfake audio detection experience
               </div>
-              <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
+              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Detect Fake Voices Instantly
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 NeuroVoice helps individuals and teams analyze suspicious audio, surface spoofing risk, and act with more confidence using AI-powered voice authentication checks.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -227,7 +227,7 @@ export default function Home() {
       </section>
 
       <section className="section-shell">
-        <div className="premium-card overflow-hidden px-6 py-10 sm:px-8 lg:px-10">
+        <div className="premium-card overflow-hidden px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
           <div className="space-y-10">
             <div className="mx-auto max-w-4xl text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-blue-300">How to use</p>
@@ -244,11 +244,11 @@ export default function Home() {
                   const Icon = step.icon;
                   return (
                     <div key={step.title}>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3 sm:items-center">
                         <Icon className="h-6 w-6 text-blue-300" />
-                        <h3 className="text-2xl font-semibold text-white">{step.title}</h3>
+                        <h3 className="text-xl font-semibold text-white sm:text-2xl">{step.title}</h3>
                       </div>
-                      <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-300">
+                      <p className="mt-3 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                         {step.description}
                       </p>
                     </div>
@@ -304,14 +304,14 @@ export default function Home() {
           const Icon = useCase.icon;
           const reverse = index % 2 === 1;
           return (
-            <div key={useCase.title} className="premium-card overflow-hidden px-6 py-8 sm:px-8 lg:px-10">
+            <div key={useCase.title} className="premium-card overflow-hidden px-5 py-8 sm:px-8 lg:px-10">
               <div className={`grid items-center gap-10 lg:grid-cols-2 ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
                 <div>
                   <div className="inline-flex rounded-2xl bg-violet-500/10 p-3 text-violet-300">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-6 text-3xl font-semibold text-white">{useCase.title}</h3>
-                  <p className="mt-4 text-lg leading-8 text-slate-300">{useCase.description}</p>
+                  <h3 className="mt-6 text-2xl font-semibold text-white sm:text-3xl">{useCase.title}</h3>
+                  <p className="mt-4 text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">{useCase.description}</p>
                   <div className="mt-6 space-y-3">
                     {useCase.points.map((point) => (
                       <div key={point} className="flex items-center gap-3 text-slate-200">

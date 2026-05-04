@@ -48,13 +48,13 @@ export default function History() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="p-3 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/30">
+    <div className="mx-auto max-w-6xl animate-fade-in-up px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mb-8 flex items-start gap-4 sm:items-center">
+        <div className="rounded-xl border border-blue-500/30 bg-blue-600/20 p-3 text-blue-400">
           <HistoryIcon className="w-8 h-8" />
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-white">Prediction History</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">Prediction History</h1>
           <p className="text-gray-400 mt-1">
             Review your previously analyzed audio files.
           </p>

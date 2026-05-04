@@ -22,21 +22,21 @@ export default function UploadCard({ file, setFile, handlePredict, loading, hand
   };
 
   return (
-    <div className="glass-panel p-6 sm:p-8 flex flex-col h-full">
+    <div className="glass-panel flex h-full flex-col p-5 sm:p-8">
       <h2 className="text-xl font-bold text-white mb-6">Upload Audio Segment</h2>
 
       {!file ? (
         <div 
-          className="border-2 border-dashed border-gray-600 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-gray-800/50 transition-all flex-1"
+          className="flex flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-600 p-6 text-center transition-all hover:border-blue-500 hover:bg-gray-800/50 sm:p-10"
           onClick={() => fileInputRef.current?.click()}
           onDragOver={onDragOver}
           onDrop={onDrop}
         >
-          <div className="bg-gray-800 p-4 rounded-full mb-4 shadow-lg group-hover:scale-110 transition-transform">
+          <div className="mb-4 rounded-full bg-gray-800 p-4 shadow-lg transition-transform group-hover:scale-110">
             <UploadCloud className="w-10 h-10 text-blue-500" />
           </div>
-          <p className="text-gray-300 font-medium text-lg mb-2">Click or drag audio file here</p>
-          <p className="text-gray-500 text-sm">Supports .wav, .mp3, .ogg (Max 10MB)</p>
+          <p className="mb-2 text-base font-medium text-gray-300 sm:text-lg">Click or drag audio file here</p>
+          <p className="text-sm text-gray-500">Supports .wav, .mp3, .ogg (Max 10MB)</p>
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -47,7 +47,7 @@ export default function UploadCard({ file, setFile, handlePredict, loading, hand
         </div>
       ) : (
         <div className="flex-1 flex flex-col space-y-6">
-          <div className="bg-gray-900/60 border border-gray-700 rounded-xl p-5 flex items-center justify-between">
+          <div className="flex flex-col gap-4 rounded-xl border border-gray-700 bg-gray-900/60 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="flex items-center space-x-4 overflow-hidden">
               <div className="bg-blue-600/20 p-3 rounded-lg flex-shrink-0">
                 <Play className="w-6 h-6 text-blue-400" />
@@ -61,7 +61,7 @@ export default function UploadCard({ file, setFile, handlePredict, loading, hand
             {!loading && (
               <button 
                 onClick={handleReset}
-                className="p-2 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0"
+                className="self-end rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-red-400 sm:self-auto"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -76,7 +76,7 @@ export default function UploadCard({ file, setFile, handlePredict, loading, hand
           <button 
             onClick={handlePredict} 
             disabled={loading}
-            className="btn-primary w-full shadow-lg shadow-blue-500/20 text-lg py-4 mt-auto"
+            className="btn-primary mt-auto w-full px-4 py-4 text-base shadow-lg shadow-blue-500/20 sm:text-lg"
           >
             {loading ? (
               <>
