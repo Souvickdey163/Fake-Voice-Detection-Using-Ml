@@ -15,3 +15,4 @@ librosa
 scipy
 gunicorn
 certifi
+requests

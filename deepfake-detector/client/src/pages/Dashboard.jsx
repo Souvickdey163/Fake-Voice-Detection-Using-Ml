@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api, { ML_REQUEST_TIMEOUT_MS } from '../services/api';
+import { startPlanCheckout } from '../services/payments';
 import UploadCard from '../components/UploadCard';
 import ResultCard from '../components/ResultCard';
 import { useUser } from '../hooks/useUser';
@@ -18,6 +19,18 @@ export default function Dashboard() {
     });
   }, [refreshUser]);
 
+  const submitPrediction = async (selectedFile) => {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    return api.post('/api/predict', formData, {
+      timeout: ML_REQUEST_TIMEOUT_MS,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  };
+
   const handlePredict = async () => {
     if (!file) {
       toast.error('Please upload an audio file first.');
@@ -26,16 +39,7 @@ export default function Dashboard() {
 
     try {
       setLoading(true);
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await api.post('/api/predict', formData, {
-        timeout: ML_REQUEST_TIMEOUT_MS,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await submitPrediction(file);
 
       console.log("Prediction response:", response.data);
       setResult(response.data);
@@ -44,7 +48,35 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Prediction failed full error:", error);
       console.error("Backend response:", error.response?.data);
-      toast.error(error.response?.data?.detail || 'Error running prediction');
+
+      const detail = error.response?.data?.detail || '';
+      const creditsExhausted = error.response?.status === 403 && detail.includes('used all');
+
+      if (creditsExhausted) {
+        try {
+          toast.error('Your credits are finished. Complete payment to continue detection.');
+          await startPlanCheckout({
+            plan: 'pro',
+            onSuccess: async () => {
+              await refreshUser();
+            },
+          });
+
+          const retryResponse = await submitPrediction(file);
+          console.log("Prediction response after payment:", retryResponse.data);
+          setResult(retryResponse.data);
+          await refreshUser();
+          toast.success('Payment successful and prediction complete!');
+          return;
+        } catch (paymentError) {
+          const paymentMessage =
+            paymentError.response?.data?.detail || paymentError.message || 'Payment failed.';
+          toast.error(paymentMessage);
+          return;
+        }
+      }
+
+      toast.error(detail || 'Error running prediction');
     } finally {
       setLoading(false);
     }

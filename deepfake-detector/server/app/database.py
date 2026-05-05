@@ -65,3 +65,4 @@ def ensure_indexes():
 users_collection = LazyCollection("users")
 predictions_collection = LazyCollection("predictions")
 otp_collection = LazyCollection("otp_codes")
+payments_collection = LazyCollection("payments")

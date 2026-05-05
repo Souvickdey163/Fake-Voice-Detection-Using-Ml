@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import auth_routes, predict_routes, history_routes, user_routes
+from .routes import auth_routes, predict_routes, history_routes, payment_routes, user_routes
 import os
 
 app = FastAPI(title="Deepfake Audio Detection API")
@@ -37,6 +37,7 @@ app.include_router(auth_routes.router)
 app.include_router(user_routes.router)
 app.include_router(predict_routes.router)
 app.include_router(history_routes.router)
+app.include_router(payment_routes.router)
 
 # =========================
 # ROOT
