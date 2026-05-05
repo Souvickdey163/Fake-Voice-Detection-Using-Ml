@@ -59,6 +59,7 @@ export default function Dashboard() {
             plan: 'pro',
             onSuccess: async () => {
               await refreshUser();
+              toast.success('Payment successful! Credits added and retrying detection.');
             },
           });
 

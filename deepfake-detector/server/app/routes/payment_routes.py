@@ -47,6 +47,29 @@ def get_payment_plans():
     }
 
 
+@router.get("/history")
+def get_payment_history(current_user: dict = Depends(get_current_user)):
+    payment_cursor = payments_collection.find({"user_id": current_user["_id"]}).sort("created_at", -1)
+    results = []
+
+    for doc in payment_cursor:
+        results.append(
+            {
+                "id": str(doc["_id"]),
+                "plan": doc.get("plan", "free"),
+                "amount": doc.get("amount", 0),
+                "currency": doc.get("currency", DEFAULT_CURRENCY),
+                "status": doc.get("status", "created"),
+                "order_id": doc.get("razorpay_order_id", ""),
+                "payment_id": doc.get("razorpay_payment_id", ""),
+                "created_at": doc.get("created_at"),
+                "paid_at": doc.get("paid_at"),
+            }
+        )
+
+    return results
+
+
 @router.post("/create-order")
 def create_payment_order(
     payload: dict,

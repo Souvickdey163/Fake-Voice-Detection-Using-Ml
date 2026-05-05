@@ -67,7 +67,7 @@ export default function Pricing() {
         plan: plan.id,
         onSuccess: async (data) => {
           await refreshUser();
-          toast.success(data.message || 'Payment successful. Your plan is active now.');
+          toast.success(data.message || 'Payment successful! Credits added to your account.');
           navigate('/dashboard');
         },
       });
