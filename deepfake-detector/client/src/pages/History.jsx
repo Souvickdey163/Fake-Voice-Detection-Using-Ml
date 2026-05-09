@@ -72,9 +72,9 @@ export default function History() {
           <HistoryIcon className="w-8 h-8" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Prediction History</h1>
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">Account History</h1>
           <p className="text-gray-400 mt-1">
-            Review your previously analyzed audio files.
+            Review both your payment activity and previously analyzed audio files.
           </p>
         </div>
       </div>
