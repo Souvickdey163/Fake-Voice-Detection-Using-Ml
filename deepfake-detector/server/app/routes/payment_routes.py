@@ -19,12 +19,12 @@ DEFAULT_CURRENCY = "INR"
 PLAN_PRICING = {
     "pro": {
         "name": "Pro",
-        "amount": 100,
+        "amount": 29900,
         "description": "NeuroVoice Pro monthly plan",
     },
     "team": {
         "name": "Team",
-        "amount": 399900,
+        "amount": 149900,
         "description": "NeuroVoice Team monthly plan",
     },
 }

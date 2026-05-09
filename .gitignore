@@ -50,3 +50,5 @@ saved_models/
 *.pth
 !deepfake-detector/server/models/
 !deepfake-detector/server/models/best_model_improved.pth
+*.dmg
+*.dmg
