@@ -1,4 +1,8 @@
 {
+  "framework": "vite",
+  "installCommand": "cd deepfake-detector/client && npm install",
+  "buildCommand": "cd deepfake-detector/client && npm run build",
+  "outputDirectory": "deepfake-detector/client/dist",
   "rewrites": [
     {
       "source": "/(.*)",
