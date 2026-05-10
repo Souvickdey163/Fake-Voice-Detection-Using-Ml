@@ -31,6 +31,8 @@ export default function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [brokenAvatarUrl, setBrokenAvatarUrl] = useState(null);
   const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [desktopMenuStyle, setDesktopMenuStyle] = useState({});
   const navigate = useNavigate();
 
   const displayUser = user || {
@@ -85,6 +87,33 @@ export default function ProfileMenu() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const updateMenuPosition = () => {
+      if (!buttonRef.current || typeof window === 'undefined') {
+        return;
+      }
+
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDesktopMenuStyle({
+        top: `${rect.bottom + 14}px`,
+        right: `${Math.max(window.innerWidth - rect.right, 16)}px`,
+      });
+    };
+
+    updateMenuPosition();
+    window.addEventListener('resize', updateMenuPosition);
+    window.addEventListener('scroll', updateMenuPosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updateMenuPosition);
+      window.removeEventListener('scroll', updateMenuPosition, true);
+    };
+  }, [open]);
+
   const handleLogout = () => {
     setOpen(false);
     clearUser();
@@ -95,6 +124,7 @@ export default function ProfileMenu() {
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         className="group relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/5 text-sm font-semibold text-white shadow-lg shadow-blue-500/10 transition-all hover:scale-[1.03] hover:border-blue-400/40 hover:bg-white/10"
@@ -120,7 +150,8 @@ export default function ProfileMenu() {
 
       {open && (
         <div
-          className="fixed left-4 right-4 top-24 z-50 max-h-[calc(100vh-7rem)] animate-fade-in-down overflow-y-auto rounded-[24px] border border-white/12 bg-slate-950/85 shadow-[0_30px_80px_rgba(15,23,42,0.65)] backdrop-blur-2xl sm:absolute sm:left-auto sm:right-0 sm:top-[calc(100%+0.85rem)] sm:max-h-none sm:w-[min(22rem,calc(100vw-2rem))] sm:overflow-visible"
+          style={desktopMenuStyle}
+          className="fixed left-4 right-4 top-24 z-[90] max-h-[calc(100vh-7rem)] animate-fade-in-down overflow-y-auto rounded-[24px] border border-white/12 bg-slate-950/85 shadow-[0_30px_80px_rgba(15,23,42,0.65)] backdrop-blur-2xl sm:left-auto sm:right-4 sm:top-auto sm:max-h-none sm:w-[min(22rem,calc(100vw-2rem))] sm:overflow-visible"
         >
             <div className="border-b border-white/10 bg-gradient-to-br from-blue-500/18 via-slate-900/40 to-violet-500/18 p-5">
               <div className="flex items-start gap-4">
