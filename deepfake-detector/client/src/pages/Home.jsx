@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   AudioWaveform,
@@ -18,11 +19,11 @@ import {
   Siren,
   ScanSearch,
 } from 'lucide-react';
-import heroImage from '../assets/image11.png';
 import familyScamImage from '../assets/image2.png';
 import businessCallsImage from '../assets/image3.png';
 import creatorContentImage from '../assets/image4.png';
 import howToUseImage from '../assets/image5.png';
+import HeroScene from '../components/HeroScene';
 
 const steps = [
   {
@@ -186,50 +187,59 @@ export default function Home() {
   return (
     <div className="space-y-16 pt-4 sm:space-y-20 sm:pt-6 lg:space-y-24 lg:pt-10">
       <section className="section-shell">
-        <div className="premium-card relative overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-12 xl:px-14">
+        <div className="premium-card shine-overlay relative overflow-hidden px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-12 xl:px-14">
           <div className="absolute inset-y-0 left-0 hidden w-1/2 bg-gradient-to-r from-blue-500/8 to-transparent lg:block" />
           <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-violet-500/10 to-transparent lg:block" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(34,211,238,0.08),transparent_18%),radial-gradient(circle_at_80%_24%,rgba(168,85,247,0.08),transparent_18%)]" />
           <div className="relative grid items-center gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12 xl:gap-16">
-            <div className="max-w-2xl lg:py-6">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-2 text-sm text-blue-200">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+              className="max-w-2xl lg:py-6"
+            >
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-100 shadow-[0_0_24px_rgba(34,211,238,0.12)]">
                 <Sparkles className="h-4 w-4" />
-                Premium deepfake audio detection experience
+                Futuristic deepfake audio intelligence
               </div>
-              <h1 className="max-w-[11ch] text-4xl font-semibold leading-[0.95] tracking-tight text-white sm:text-5xl lg:text-[4.5rem]">
-                Detect Fake Voices Instantly
+              <h1 className="max-w-[11ch] text-4xl font-semibold leading-[0.9] tracking-tight text-white sm:text-5xl lg:text-[4.8rem]">
+                Detect <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">Fake Voices</span> Instantly
               </h1>
               <p className="mt-6 max-w-[36rem] text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
                 NeuroVoice helps individuals and teams analyze suspicious audio, surface spoofing risk, and act with more confidence using AI-powered voice authentication checks.
               </p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-                <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 px-6 py-4 text-base font-medium text-white shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] lg:min-w-[11rem]">
+                <Link to="/dashboard" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-6 py-4 text-base font-medium text-white shadow-[0_0_35px_rgba(59,130,246,0.24)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] lg:min-w-[11rem]">
                   Try Now
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link to="/pricing" className="btn-ghost inline-flex items-center justify-center lg:min-w-[11rem]">
+                <Link to="/pricing" className="btn-ghost inline-flex items-center justify-center rounded-2xl border-cyan-300/15 bg-white/[0.03] lg:min-w-[11rem]">
                   View Pricing
                 </Link>
               </div>
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
                 {metrics.map((metric) => (
-                  <div key={metric.label} className="rounded-[24px] border border-white/10 bg-slate-950/45 px-5 py-5 backdrop-blur-sm">
+                  <motion.div
+                    key={metric.label}
+                    whileHover={{ y: -6, rotateX: 6, rotateY: -6 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+                    className="rounded-[24px] border border-white/10 bg-slate-950/45 px-5 py-5 backdrop-blur-sm"
+                  >
                     <div className="text-2xl font-semibold text-white lg:text-[2rem]">{metric.value}</div>
                     <div className="mt-1 max-w-[14ch] text-sm leading-6 text-slate-400">{metric.label}</div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="relative lg:pl-4 xl:pl-8">
-              <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-blue-500/20 to-violet-500/20 blur-2xl lg:-inset-6" />
-              <div className="relative rounded-[32px] border border-white/10 bg-slate-950/85 p-4 shadow-2xl lg:p-5">
-                <img
-                  src={heroImage}
-                  alt="NeuroVoice dashboard preview"
-                  className="h-[28rem] w-full rounded-[24px] object-cover lg:h-[40rem]"
-                />
-              </div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.75, delay: 0.1 }}
+              className="relative lg:pl-4 xl:pl-8"
+            >
+              <HeroScene />
+            </motion.div>
           </div>
         </div>
       </section>
@@ -292,7 +302,12 @@ export default function Home() {
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div key={step.title} className="premium-card premium-card-hover p-6">
+              <motion.div
+                key={step.title}
+                whileHover={{ y: -8, rotateX: 6, rotateY: index % 2 === 0 ? -5 : 5 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+                className="premium-card premium-card-hover p-6"
+              >
                 <div className="flex items-center justify-between">
                   <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-300">
                     <Icon className="h-6 w-6" />
@@ -301,7 +316,7 @@ export default function Home() {
                 </div>
                 <h3 className="mt-6 text-xl font-semibold text-white">{step.title}</h3>
                 <p className="mt-3 text-slate-300">{step.description}</p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -312,10 +327,17 @@ export default function Home() {
           const Icon = useCase.icon;
           const reverse = index % 2 === 1;
           return (
-            <div key={useCase.title} className="premium-card overflow-hidden px-5 py-8 sm:px-8 lg:px-10">
+            <motion.div
+              key={useCase.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.55, delay: index * 0.08 }}
+              className="premium-card overflow-hidden px-5 py-8 sm:px-8 lg:px-10"
+            >
               <div className={`grid items-center gap-10 lg:grid-cols-2 ${reverse ? 'lg:[&>*:first-child]:order-2' : ''}`}>
                 <div>
-                  <div className="inline-flex rounded-2xl bg-violet-500/10 p-3 text-violet-300">
+                  <div className="inline-flex rounded-2xl border border-violet-300/12 bg-violet-500/10 p-3 text-violet-300 shadow-[0_0_24px_rgba(168,85,247,0.12)]">
                     <Icon className="h-6 w-6" />
                   </div>
                   <h3 className="mt-6 text-2xl font-semibold text-white sm:text-3xl">{useCase.title}</h3>
@@ -332,7 +354,7 @@ export default function Home() {
 
                 <div className="relative">
                   <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-blue-500/20 via-transparent to-violet-500/20 blur-xl" />
-                  <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 p-5">
+                  <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 p-5 shadow-[0_24px_80px_rgba(2,8,23,0.55)]">
                     <img src={useCase.image} alt={useCase.title} className="h-72 w-full rounded-[22px] object-cover opacity-90" />
                     <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
                       {useCase.caption}
@@ -340,7 +362,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </section>
@@ -354,13 +376,18 @@ export default function Home() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <div key={feature.title} className="premium-card premium-card-hover p-6">
+              <motion.div
+                key={feature.title}
+                whileHover={{ y: -8, rotateX: 7, rotateY: 5 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+                className="premium-card premium-card-hover p-6"
+              >
                 <div className="rounded-2xl bg-white/5 p-3 text-blue-300 w-fit">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="mt-5 text-xl font-semibold text-white">{feature.title}</h3>
                 <p className="mt-3 text-slate-300">{feature.description}</p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
