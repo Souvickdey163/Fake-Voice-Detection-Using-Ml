@@ -16,7 +16,14 @@ from dotenv import load_dotenv
 from google_auth_oauthlib.flow import Flow
 from jose import JWTError, jwt
 
-from ..schemas import UserCreate, UserLogin, Token, GoogleAuthRequest
+from ..schemas import (
+    UserCreate,
+    UserLogin,
+    Token,
+    GoogleAuthRequest,
+    PasswordResetOtpRequest,
+    PasswordResetRequest,
+)
 from ..auth import (
     get_password_hash,
     verify_password,
@@ -52,10 +59,17 @@ GOOGLE_SCOPES = [
 # =========================
 # HELPER: SEND EMAIL OTP
 # =========================
-def build_otp_email(otp: str):
+def build_otp_email(otp: str, purpose: str = "register"):
     subject = "Your NeuroVoice OTP Code"
+    intro = "Use this code to complete your NeuroVoice registration."
+    if purpose == "reset_password":
+        subject = "Your NeuroVoice Password Reset Code"
+        intro = "Use this code to reset your NeuroVoice account password."
+
     body = f"""
 Hello,
+
+{intro}
 
 Your OTP code is: {otp}
 
@@ -108,9 +122,37 @@ def send_email_with_smtp(receiver_email: str, subject: str, body: str):
                 print(f"SMTP QUIT ERROR: {str(close_error)}", flush=True)
 
 
-def send_email_otp(receiver_email: str, otp: str):
-    subject, body = build_otp_email(otp)
+def send_email_otp(receiver_email: str, otp: str, purpose: str = "register"):
+    subject, body = build_otp_email(otp, purpose)
     send_email_with_smtp(receiver_email, subject, body)
+
+
+def store_otp(email: str, otp: str, purpose: str):
+    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    otp_collection.delete_many({"email": email, "purpose": purpose})
+    otp_collection.insert_one({
+        "email": email,
+        "otp": otp,
+        "purpose": purpose,
+        "expires_at": expires_at,
+        "verified": False,
+    })
+
+
+def validate_otp_record(email: str, otp: str, purpose: str):
+    otp_record = otp_collection.find_one({
+        "email": email.lower(),
+        "otp": otp,
+        "purpose": purpose,
+    })
+
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+
+    if datetime.utcnow() > otp_record["expires_at"]:
+        raise HTTPException(status_code=400, detail="OTP expired")
+
+    return otp_record
 
 
 def get_google_redirect_uri(request: Request) -> str:
@@ -240,22 +282,12 @@ def send_otp(data: dict):
         raise HTTPException(status_code=400, detail="Email is already registered")
 
     otp = str(random.randint(100000, 999999))
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
-
-    # Delete old OTPs for same email
     step_start = time.perf_counter()
-    otp_collection.delete_many({"email": email})
-
-    otp_collection.insert_one({
-        "email": email,
-        "otp": otp,
-        "expires_at": expires_at,
-        "verified": False
-    })
+    store_otp(email, otp, "register")
     print(f"[otp] otp stored in {time.perf_counter() - step_start:.2f}s", flush=True)
 
     step_start = time.perf_counter()
-    send_email_otp(email, otp)
+    send_email_otp(email, otp, "register")
     print(
         f"[otp] email sent in {time.perf_counter() - step_start:.2f}s "
         f"(total {time.perf_counter() - request_start:.2f}s)",
@@ -281,13 +313,7 @@ def register_user(user: UserCreate):
     if users_collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    otp_record = otp_collection.find_one({"email": user.email.lower(), "otp": otp})
-
-    if not otp_record:
-        raise HTTPException(status_code=400, detail="Invalid OTP")
-
-    if datetime.utcnow() > otp_record["expires_at"]:
-        raise HTTPException(status_code=400, detail="OTP expired")
+    validate_otp_record(user.email.lower(), otp, "register")
 
     hashed_password = get_password_hash(user.password)
 
@@ -302,9 +328,59 @@ def register_user(user: UserCreate):
     }
 
     users_collection.insert_one(user_dict)
-    otp_collection.delete_many({"email": user.email.lower()})
+    otp_collection.delete_many({"email": user.email.lower(), "purpose": "register"})
 
     return {"message": "User registered successfully"}
+
+
+@router.post("/forgot-password/send-otp")
+def send_password_reset_otp(data: PasswordResetOtpRequest):
+    ensure_indexes()
+
+    email = data.email.strip().lower()
+    user = users_collection.find_one({"email": email})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this email.")
+
+    if user.get("provider") == "google" or user.get("password") is None:
+        raise HTTPException(
+            status_code=400,
+            detail="This account uses Google sign-in. Please continue with Google."
+        )
+
+    otp = str(random.randint(100000, 999999))
+    store_otp(email, otp, "reset_password")
+    send_email_otp(email, otp, "reset_password")
+
+    return {"message": "Password reset OTP sent successfully."}
+
+
+@router.post("/forgot-password/reset")
+def reset_password(data: PasswordResetRequest):
+    ensure_indexes()
+
+    email = data.email.strip().lower()
+    user = users_collection.find_one({"email": email})
+
+    if not user:
+      raise HTTPException(status_code=404, detail="No account found with this email.")
+
+    validate_otp_record(email, data.otp, "reset_password")
+
+    users_collection.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "password": get_password_hash(data.password),
+                "provider": "local",
+                "password_updated_at": datetime.utcnow(),
+            }
+        },
+    )
+    otp_collection.delete_many({"email": email, "purpose": "reset_password"})
+
+    return {"message": "Password reset successful. Please login with your new password."}
 
 
 # =========================

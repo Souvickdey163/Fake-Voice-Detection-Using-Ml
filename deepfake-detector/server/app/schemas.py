@@ -13,6 +13,14 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class PasswordResetOtpRequest(BaseModel):
+    email: EmailStr
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    password: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
