@@ -4,8 +4,11 @@ import jsPDF from 'jspdf';
 import toast from 'react-hot-toast';
 import {
   Activity,
+  AlertTriangle,
   Download,
   FileText,
+  ListChecks,
+  ScanLine,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
@@ -31,6 +34,24 @@ function buildFallbackReport(result) {
     0,
     100
   );
+  const confidenceBand =
+    modelConfidence >= 85 ? 'High confidence' : modelConfidence >= 60 ? 'Moderate confidence' : 'Low confidence';
+  const verdictTitle = isFake ? 'Potentially Synthetic Audio Detected' : 'No Strong Synthetic Signal Detected';
+  const riskLevel = fakeProbability >= 80 ? 'High risk' : fakeProbability >= 45 ? 'Medium risk' : 'Low risk';
+  const recommendedAction = isFake
+    ? 'Do not trust this recording on its own. Verify the source manually before sharing, acting, or escalating.'
+    : 'This sample appears more consistent with authentic speech, but sensitive decisions should still include source verification.';
+  const keySignals = isFake
+    ? [
+        'Low authenticity score compared with spoof probability.',
+        'Model confidence strongly supports the current fake classification.',
+        'Acoustic transitions and texture appear less natural than expected.',
+      ]
+    : [
+        'Authenticity score is stronger than spoof probability.',
+        'Model confidence supports a natural-speech interpretation.',
+        'No dominant synthetic artifacts were surfaced in the current pass.',
+      ];
 
   return {
     filename: result?.filename ?? 'Uploaded audio',
@@ -41,29 +62,36 @@ function buildFallbackReport(result) {
     summary:
       result?.summary ??
       (isFake
-        ? 'The audio exhibits patterns associated with spoofed speech and should be reviewed carefully before being trusted.'
-        : 'The audio exhibits natural human speech patterns with no major anomalies surfaced by the current model output.'),
+        ? 'The model found a strong concentration of spoof-like characteristics in this recording. It should be treated as suspicious until it is verified through an independent source or secondary evidence.'
+        : 'The model found the recording to be broadly consistent with natural human speech. No major spoofing patterns dominated this analysis pass.'),
     breakdown: {
       authenticity,
       fakeProbability,
       modelConfidence,
     },
+    interpretation: {
+      verdictTitle,
+      confidenceBand,
+      riskLevel,
+      recommendedAction,
+      keySignals,
+    },
     details: {
       vocalConsistency:
         result?.details?.vocalConsistency ??
         (isFake
-          ? 'Detected voice transitions appear less stable than expected for natural speech.'
-          : 'Pitch movement and tone transitions remain consistent with authentic human delivery.'),
+          ? 'Detected voice transitions appear less stable than expected for natural speech. This can happen when generated speech struggles to preserve smooth phrasing, breath timing, or realistic emphasis.'
+          : 'Pitch movement and tone transitions remain consistent with authentic human delivery. The vocal flow does not show strong instability in the model summary.'),
       backgroundNoise:
         result?.details?.backgroundNoise ??
         (isFake
-          ? 'Background texture appears flatter than expected, which can happen in generated or heavily processed clips.'
-          : 'Background ambience is stable across the sample without obvious looping artifacts.'),
+          ? 'Background texture appears flatter than expected, which can happen in generated or heavily processed clips. Real-world recordings usually preserve more irregular environmental variation.'
+          : 'Background ambience is stable across the sample without obvious looping artifacts. The noise floor appears comparatively natural for a standard recording environment.'),
       spectrogram:
         result?.details?.spectrogram ??
         (isFake
-          ? 'Spectral distribution suggests synthetic artifacts in portions of the analyzed frequency range.'
-          : 'No dominant synthetic frequency artifacts were surfaced in the analyzed spectrogram features.'),
+          ? 'Spectral distribution suggests synthetic artifacts in portions of the analyzed frequency range. The model likely surfaced unusually regular energy patterns or missing natural texture.'
+          : 'No dominant synthetic frequency artifacts were surfaced in the analyzed spectrogram features. Frequency spread appears closer to expected natural speech structure.'),
     },
   };
 }
@@ -130,6 +158,10 @@ export default function ResultCard({ result, loading }) {
   const formattedTimestamp = report?.timestamp
     ? new Date(report.timestamp).toLocaleString()
     : null;
+  const authenticityTone = isFake ? 'text-red-300' : 'text-emerald-300';
+  const verdictTone = isFake
+    ? 'border-red-400/20 bg-red-500/10 text-red-100'
+    : 'border-emerald-400/20 bg-emerald-500/10 text-emerald-100';
 
   if (loading) {
     return (
@@ -173,7 +205,7 @@ export default function ResultCard({ result, loading }) {
             </div>
             <h2 className="mt-4 text-2xl font-semibold text-white sm:text-3xl">Audio Authenticity Review</h2>
             <p className="mt-3 text-slate-300">
-              Structured model output for your uploaded audio sample.
+              A more readable explanation of what the model saw in your uploaded sample, what the result means, and how cautiously you should treat this recording.
             </p>
           </div>
 
@@ -205,10 +237,24 @@ export default function ResultCard({ result, loading }) {
                   {isFake ? <ShieldAlert className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
                   <span>{report.label}</span>
                 </div>
+                <p className={`mt-4 max-w-md text-sm leading-7 ${authenticityTone}`}>
+                  {report.interpretation.verdictTitle}
+                </p>
               </div>
 
               <div className={`rounded-2xl p-4 ${isFake ? 'bg-red-500/10 text-red-300' : 'bg-green-500/10 text-green-300'}`}>
                 {isFake ? <ShieldAlert className="h-8 w-8" /> : <ShieldCheck className="h-8 w-8" />}
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className={`rounded-2xl border px-4 py-3 text-sm ${verdictTone}`}>
+                <div className="text-xs uppercase tracking-[0.22em] opacity-75">Risk Level</div>
+                <div className="mt-2 text-base font-medium">{report.interpretation.riskLevel}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-slate-200">
+                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Confidence Band</div>
+                <div className="mt-2 text-base font-medium text-white">{report.interpretation.confidenceBand}</div>
               </div>
             </div>
           </div>
@@ -238,6 +284,16 @@ export default function ResultCard({ result, loading }) {
                   {report.breakdown.fakeProbability.toFixed(2)}%
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+              <div className="flex items-center gap-2 text-slate-200">
+                <AlertTriangle className="h-4 w-4 text-amber-300" />
+                <h4 className="text-sm font-medium text-white">Recommended Action</h4>
+              </div>
+              <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
+                {report.interpretation.recommendedAction}
+              </p>
             </div>
           </div>
         </div>
@@ -271,10 +327,28 @@ export default function ResultCard({ result, loading }) {
                 />
               </div>
             </div>
+
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/55 p-4">
+              <div className="flex items-center gap-2 text-slate-200">
+                <ListChecks className="h-4 w-4 text-cyan-300" />
+                <h4 className="text-sm font-medium text-white">Key Signals Behind This Result</h4>
+              </div>
+              <div className="mt-3 space-y-3">
+                {report.interpretation.keySignals.map((signal) => (
+                  <div key={signal} className="flex gap-3 text-sm leading-7 text-slate-300">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                    <span>{signal}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+            <div className="flex items-center gap-2">
+              <ScanLine className="h-5 w-5 text-blue-300" />
+              <h3 className="text-lg font-semibold text-white">Detailed Analysis</h3>
+            </div>
             <div className="mt-6 space-y-5">
               <div>
                 <h4 className="text-sm uppercase tracking-[0.2em] text-slate-400">Vocal Consistency</h4>
@@ -288,6 +362,26 @@ export default function ResultCard({ result, loading }) {
                 <h4 className="text-sm uppercase tracking-[0.2em] text-slate-400">Spectrogram Analysis</h4>
                 <p className="mt-2 text-sm leading-7 text-slate-300 sm:text-base">{report.details.spectrogram}</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.04] p-6">
+          <h3 className="text-lg font-semibold text-white">Plain-Language Interpretation</h3>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+              <h4 className="text-sm uppercase tracking-[0.22em] text-slate-400">What This Means</h4>
+              <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
+                {isFake
+                  ? 'The model is strongly leaning toward this sample being manipulated, generated, or otherwise inconsistent with expected natural human speech patterns.'
+                  : 'The model is leaning toward this sample sounding natural. That means the analyzed features were more aligned with authentic speech than synthetic speech.'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+              <h4 className="text-sm uppercase tracking-[0.22em] text-slate-400">How To Use This Result</h4>
+              <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-base">
+                Use this report as a decision-support signal, not as the only proof. For sensitive situations, combine it with source verification, context checks, and human review before taking action.
+              </p>
             </div>
           </div>
         </div>
