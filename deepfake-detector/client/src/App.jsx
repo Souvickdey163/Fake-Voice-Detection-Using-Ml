@@ -8,10 +8,12 @@ import Pricing from './pages/Pricing';
 import About from './pages/About';
 import Settings from './pages/Settings';
 import Navbar from './components/Navbar';
+import AmbientBackground from './components/AmbientBackground';
 import { UserProvider } from './context/UserContext';
 
 const AppShell = ({ children, contentClassName = 'pt-24 pb-12 sm:pt-28 sm:pb-16' }) => (
   <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <AmbientBackground />
     <Navbar />
     <main className={`flex-1 z-10 ${contentClassName}`}>{children}</main>
 
