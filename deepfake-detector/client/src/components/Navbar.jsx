@@ -30,7 +30,7 @@ export default function Navbar() {
   return (
     <nav className="fixed left-0 top-0 z-50 w-full">
       <div className="section-shell py-3 sm:py-4">
-        <div className="glass-panel shine-overlay overflow-visible border-white/12 bg-slate-950/60 px-4 py-4 sm:px-6 lg:px-7 lg:py-5">
+        <div className="glass-panel overflow-visible border-white/12 bg-slate-950/60 px-4 py-4 sm:px-6 lg:px-7 lg:py-5">
           <div className="flex items-center justify-between gap-4 lg:hidden">
             <Link to="/" className="flex min-w-0 items-center gap-3">
               <div className="rounded-2xl border border-white/12 bg-gradient-to-br from-blue-500 to-violet-500 p-2.5 shadow-[0_0_32px_rgba(59,130,246,0.28)]">
