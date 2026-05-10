@@ -16,6 +16,7 @@ export default function History() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('payments');
+  const isPaymentsTab = activeTab === 'payments';
 
   useEffect(() => {
     fetchPageData();
@@ -70,12 +71,16 @@ export default function History() {
     <div className="mx-auto max-w-6xl animate-fade-in-up px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div className="mb-8 flex items-start gap-4 sm:items-center">
         <div className="rounded-xl border border-blue-500/30 bg-blue-600/20 p-3 text-blue-400">
-          <HistoryIcon className="w-8 h-8" />
+          {isPaymentsTab ? <Receipt className="w-8 h-8" /> : <HistoryIcon className="w-8 h-8" />}
         </div>
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Account History</h1>
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">
+            {isPaymentsTab ? 'Payment History' : 'Prediction History'}
+          </h1>
           <p className="text-gray-400 mt-1">
-            Review both your payment activity and previously analyzed audio files.
+            {isPaymentsTab
+              ? 'Review your recent plan upgrades and checkout attempts.'
+              : 'Review your previously analyzed audio files.'}
           </p>
         </div>
       </div>
@@ -107,7 +112,7 @@ export default function History() {
         </button>
       </div>
 
-      {activeTab === 'payments' ? (
+      {isPaymentsTab ? (
         <div className="glass-panel overflow-hidden">
           <div className="border-b border-gray-700/40 bg-gray-900/20 px-6 py-5">
             <div className="flex items-center gap-3">

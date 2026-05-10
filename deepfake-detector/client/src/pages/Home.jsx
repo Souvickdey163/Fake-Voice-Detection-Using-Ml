@@ -54,6 +54,8 @@ const useCases = [
     image: familyScamImage,
     description:
       'Verify suspicious “urgent” voice messages that mimic loved ones and reduce the chance of high-pressure fraud.',
+    caption:
+      'Use NeuroVoice as a quick second check before reacting to an emotional family voice note or emergency request.',
     points: ['Screen alarming voice notes quickly', 'Add confidence before sharing', 'Protect vulnerable family members'],
   },
   {
@@ -62,6 +64,8 @@ const useCases = [
     image: businessCallsImage,
     description:
       'Use NeuroVoice before acting on escalations, executive requests, or customer call clips that feel slightly off.',
+    caption:
+      'Help teams validate high-stakes audio before approving actions, escalating incidents, or trusting a sensitive call.',
     points: ['Reduce social-engineering risk', 'Check sensitive call evidence', 'Support incident response teams'],
   },
   {
@@ -70,6 +74,8 @@ const useCases = [
     image: creatorContentImage,
     description:
       'Build trust in journalism, recruiting, and content workflows by checking whether a recording shows spoofing signals.',
+    caption:
+      'Review sourced clips, creator submissions, and spoken media with more confidence before publishing or sharing.',
     points: ['Audit sourced audio clips', 'Review submissions faster', 'Protect editorial credibility'],
   },
 ];
@@ -329,7 +335,7 @@ export default function Home() {
                   <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-slate-900/70 p-5">
                     <img src={useCase.image} alt={useCase.title} className="h-72 w-full rounded-[22px] object-cover opacity-90" />
                     <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
-                      NeuroVoice is positioned here as a verification layer before a user trusts a suspicious recording.
+                      {useCase.caption}
                     </div>
                   </div>
                 </div>
