@@ -343,12 +343,6 @@ def send_password_reset_otp(data: PasswordResetOtpRequest):
     if not user:
         raise HTTPException(status_code=404, detail="No account found with this email.")
 
-    if user.get("provider") == "google" or user.get("password") is None:
-        raise HTTPException(
-            status_code=400,
-            detail="This account uses Google sign-in. Please continue with Google."
-        )
-
     otp = str(random.randint(100000, 999999))
     store_otp(email, otp, "reset_password")
     send_email_otp(email, otp, "reset_password")
