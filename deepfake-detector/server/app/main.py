@@ -16,12 +16,16 @@ origins = [
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "https://fake-voice-detection-using-ml.vercel.app",
+    "https://fake-voice-detection.vercel.app",
 ]
 
-# Add production frontend if available.
-frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
-    origins.append(frontend_url.rstrip("/"))
+# Add production frontend URLs from Render env if available.
+frontend_urls = [
+    url.strip().rstrip("/")
+    for url in os.getenv("FRONTEND_URLS", os.getenv("FRONTEND_URL", "")).split(",")
+    if url.strip()
+]
+origins = list(dict.fromkeys([*origins, *frontend_urls]))
 
 app.add_middleware(
     CORSMiddleware,
