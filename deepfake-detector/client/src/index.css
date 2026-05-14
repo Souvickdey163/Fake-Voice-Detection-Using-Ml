@@ -69,7 +69,7 @@
 }
 
 .section-shell {
-  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  @apply w-full max-w-[82rem] mx-auto px-6 sm:px-8 lg:px-10;
 }
 
 .section-title {
@@ -91,6 +91,46 @@
 .premium-card-hover {
   @apply hover:border-blue-400/30 hover:bg-white/[0.06] hover:-translate-y-1 hover:shadow-[0_32px_90px_rgba(59,130,246,0.18)];
   transform-style: preserve-3d;
+}
+
+.scene-3d {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.interactive-hologram {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.interactive-hologram::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.14), transparent 36%);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.interactive-hologram:hover::before {
+  opacity: 1;
+}
+
+.globe-shell {
+  transform-style: preserve-3d;
+  animation: globeFloat 7s ease-in-out infinite;
+}
+
+.globe-ring {
+  transform-style: preserve-3d;
+  animation: globeSpin 16s linear infinite;
+}
+
+.globe-ring-reverse {
+  animation-direction: reverse;
+  animation-duration: 22s;
 }
 
 @keyframes blob {
@@ -159,6 +199,89 @@
   100% {
     transform: translateX(140%);
   }
+}
+
+@keyframes globeSpin {
+  from {
+    transform: rotateX(66deg) rotateZ(0deg);
+  }
+
+  to {
+    transform: rotateX(66deg) rotateZ(360deg);
+  }
+}
+
+@keyframes globeFloat {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotateX(8deg) rotateY(-12deg);
+  }
+
+  50% {
+    transform: translate3d(0, -14px, 0) rotateX(13deg) rotateY(12deg);
+  }
+}
+
+@keyframes pulseBeam {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scaleX(0.72);
+  }
+
+  50% {
+    opacity: 0.95;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes orbitDot {
+  from {
+    transform: rotate(0deg) translateX(8.8rem) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(8.8rem) rotate(-360deg);
+  }
+}
+
+@keyframes cardDrift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotateX(8deg) rotateY(-10deg);
+  }
+
+  50% {
+    transform: translate3d(0, -12px, 0) rotateX(12deg) rotateY(8deg);
+  }
+}
+
+@keyframes waveRise {
+  0%, 100% {
+    transform: scaleY(0.45);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.pulse-beam {
+  animation: pulseBeam 2.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.orbit-dot {
+  animation: orbitDot 9s linear infinite;
+}
+
+.card-drift {
+  animation: cardDrift 7s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+.wave-rise {
+  animation: waveRise 2.4s ease-in-out infinite;
+  transform-origin: bottom;
 }
 
 .animate-blob {

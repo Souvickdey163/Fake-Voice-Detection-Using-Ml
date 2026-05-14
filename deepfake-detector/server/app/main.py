@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from .routes import auth_routes, predict_routes, history_routes, payment_routes, user_routes
 import os
 
@@ -49,4 +50,4 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"ok": True, "status": "running"}
+    return PlainTextResponse("OK", status_code=200)

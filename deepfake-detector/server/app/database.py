@@ -59,6 +59,7 @@ def ensure_indexes():
         return
 
     users_collection.create_index("email", unique=True)
+    ratings_collection.create_index("user_id", unique=True)
     _indexes_ready = True
 
 
@@ -66,3 +67,4 @@ users_collection = LazyCollection("users")
 predictions_collection = LazyCollection("predictions")
 otp_collection = LazyCollection("otp_codes")
 payments_collection = LazyCollection("payments")
+ratings_collection = LazyCollection("ratings")

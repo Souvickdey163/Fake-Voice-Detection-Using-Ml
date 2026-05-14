@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import datetime
 
@@ -63,3 +63,8 @@ class PredictionResponse(BaseModel):
 
 class GoogleAuthRequest(BaseModel):
     token: str
+
+
+class RatingCreate(BaseModel):
+    score: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = Field(default="", max_length=500)
