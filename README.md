@@ -2,13 +2,28 @@
 
 This project is a full-stack fake/deepfake audio detection web app built by Souvick. It lets a user sign up or log in, upload an audio file, run ML-based fake voice detection, view a confidence score, and keep a prediction history.
 
-## Live Deployment
+## 🌐 Live Deployment
 
-- Frontend: https://fake-voice-detection-using-ml.vercel.app
-- Backend API: Add your Railway backend URL here after deployment, for example `https://your-backend.up.railway.app`
-- API health check: `https://your-backend.up.railway.app/health`
+<div align="center">
 
-> Important: The frontend URL above is already allowed in the FastAPI CORS configuration. After Railway gives you the backend URL, set the same frontend URL in Railway as `FRONTEND_URL`.
+### 🚀 Production Links
+
+| Service | URL |
+|----------|-----|
+| **Frontend** | [NeuroVoice](https://fake-voice-detection-using-ml.vercel.app) |
+| **Backend API** | `https://your-backend.up.railway.app` |
+| **Health Check** | `https://your-backend.up.railway.app/health` |
+
+</div>
+
+---
+
+> ⚡ **Deployment Note**  
+> The frontend domain is already configured in the FastAPI CORS settings.  
+> After deploying the backend on Railway, set the same frontend URL as:
+
+```env
+FRONTEND_URL=https://fake-voice-detection-using-ml.vercel.app
 
 ---
 
