@@ -122,21 +122,37 @@ export default function HeroScene() {
         <MotionDiv
           animate={{ y: [0, -10, 0], scale: [1, 1.025, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="relative flex h-[18rem] w-[18rem] items-center justify-center"
+          className="relative flex h-[17rem] w-[17rem] items-center justify-center rounded-full"
         >
-          <div className="absolute h-[15.5rem] w-[15.5rem] rounded-full bg-[radial-gradient(circle_at_50%_42%,rgba(34,211,238,0.18),rgba(99,102,241,0.08)_38%,transparent_68%)] blur-xl" />
-          <video
-            className="relative z-10 h-[16rem] w-[16rem] object-contain opacity-90 mix-blend-screen drop-shadow-[0_0_42px_rgba(125,211,252,0.55)]"
-            src="/media/neurovoice-liquid-orb.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-hidden="true"
+          <div className="absolute h-[16rem] w-[16rem] rounded-full bg-[radial-gradient(circle_at_34%_24%,rgba(255,255,255,0.35),transparent_18%),radial-gradient(circle_at_65%_28%,rgba(168,85,247,0.55),transparent_22%),radial-gradient(circle_at_44%_66%,rgba(34,211,238,0.46),transparent_28%),linear-gradient(145deg,rgba(20,30,66,0.88),rgba(3,7,18,0.2))] opacity-90 blur-sm shadow-[0_0_70px_rgba(56,189,248,0.28)]" />
+          <div className="absolute h-[13.8rem] w-[13.8rem] rounded-full border border-white/10 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.2),rgba(2,6,23,0.06)_58%,transparent_72%)]" />
+          <MotionDiv
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            className="absolute h-[13.4rem] w-[13.4rem] rounded-full border border-cyan-300/20"
           />
-          <div className="absolute h-[16.5rem] w-[16.5rem] rounded-full border border-white/10" />
-          <div className="absolute h-[12rem] w-[12rem] rounded-full border border-cyan-300/15" />
-          <div className="absolute inset-x-10 top-8 h-7 rounded-full bg-white/16 blur-xl" />
+          <MotionDiv
+            animate={{ rotate: -360 }}
+            transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
+            className="absolute h-[10.8rem] w-[10.8rem] rounded-full border border-dashed border-violet-300/25"
+          />
+          <MotionDiv
+            animate={{ rotate: [0, 18, -10, 0], scale: [1, 1.05, 0.98, 1] }}
+            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute h-28 w-44 rounded-[60%_40%_55%_45%/52%_46%_54%_48%] bg-gradient-to-br from-cyan-200/90 via-blue-500/70 to-violet-500/80 shadow-[inset_18px_-14px_32px_rgba(15,23,42,0.42),0_0_42px_rgba(34,211,238,0.45)]"
+          />
+          <MotionDiv
+            animate={{ rotate: [28, 44, 18, 28], scale: [1, 0.96, 1.06, 1] }}
+            transition={{ duration: 6.4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute h-32 w-24 rounded-[42%_58%_50%_50%/42%_38%_62%_58%] bg-gradient-to-br from-fuchsia-300/75 via-violet-500/75 to-cyan-300/65 shadow-[inset_-14px_18px_30px_rgba(15,23,42,0.5),0_0_34px_rgba(168,85,247,0.38)]"
+          />
+          <MotionDiv
+            animate={{ rotate: [-32, -18, -38, -32], y: [0, -5, 3, 0] }}
+            transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute h-24 w-36 rounded-[58%_42%_46%_54%/45%_55%_45%_55%] bg-gradient-to-br from-white/55 via-cyan-300/75 to-blue-700/70 shadow-[inset_10px_12px_26px_rgba(15,23,42,0.46),0_0_28px_rgba(125,211,252,0.42)]"
+          />
+          <div className="absolute h-9 w-9 rounded-full bg-gradient-to-br from-cyan-200 to-violet-400 shadow-[0_0_28px_rgba(34,211,238,0.85)]" />
+          <div className="absolute inset-x-10 top-8 h-7 rounded-full bg-white/18 blur-xl" />
           <span className="absolute bottom-7 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.95)]" />
         </MotionDiv>
       </MotionDiv>
