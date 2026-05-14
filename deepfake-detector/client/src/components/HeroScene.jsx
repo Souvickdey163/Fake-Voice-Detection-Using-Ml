@@ -108,24 +108,25 @@ export default function HeroScene() {
           style={{ x: bgX, y: bgY }}
           className="absolute h-[21rem] w-[21rem] rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.16),transparent_62%)] blur-2xl"
         />
-        <div className="absolute h-[21rem] w-[21rem] rounded-full border border-cyan-300/20 bg-cyan-300/5 shadow-[0_0_120px_rgba(56,189,248,0.2)]" />
+        <div className="absolute h-[20rem] w-[20rem] rounded-full border border-cyan-300/20 bg-cyan-300/5 shadow-[0_0_120px_rgba(56,189,248,0.2)]" />
         <MotionDiv
           animate={{ rotate: 360 }}
           transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-          className="absolute h-[22rem] w-[22rem] rounded-full border border-dashed border-cyan-300/25"
+          className="absolute h-[21rem] w-[21rem] rounded-full border border-dashed border-cyan-300/25"
         />
         <MotionDiv
           animate={{ rotate: -360 }}
           transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-          className="absolute h-[17rem] w-[17rem] rounded-full border border-violet-300/25"
+          className="absolute h-[16rem] w-[16rem] rounded-full border border-violet-300/25"
         />
         <MotionDiv
           animate={{ y: [0, -10, 0], scale: [1, 1.025, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="relative flex h-[20rem] w-[20rem] items-center justify-center overflow-hidden rounded-full border border-white/12 bg-black shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_24px_90px_rgba(8,47,73,0.55)]"
+          className="relative flex h-[18rem] w-[18rem] items-center justify-center"
         >
+          <div className="absolute h-[15.5rem] w-[15.5rem] rounded-full bg-[radial-gradient(circle_at_50%_42%,rgba(34,211,238,0.18),rgba(99,102,241,0.08)_38%,transparent_68%)] blur-xl" />
           <video
-            className="absolute inset-0 h-full w-full scale-[1.12] object-cover opacity-95"
+            className="relative z-10 h-[16rem] w-[16rem] object-contain opacity-90 mix-blend-screen drop-shadow-[0_0_42px_rgba(125,211,252,0.55)]"
             src="/media/neurovoice-liquid-orb.mp4"
             autoPlay
             muted
@@ -133,14 +134,10 @@ export default function HeroScene() {
             playsInline
             aria-hidden="true"
           />
-          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_42%,transparent_42%,rgba(0,0,0,0.42)_72%,rgba(0,0,0,0.88)_100%)]" />
-          <div className="absolute inset-3 rounded-full border border-white/10" />
-          <div className="absolute inset-10 rounded-full border border-cyan-300/15" />
-          <div className="absolute inset-x-12 top-12 h-7 rounded-full bg-white/20 blur-xl" />
-          <div className="absolute bottom-10 flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-cyan-100/75">
-            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
-            Liquid Voice Core
-          </div>
+          <div className="absolute h-[16.5rem] w-[16.5rem] rounded-full border border-white/10" />
+          <div className="absolute h-[12rem] w-[12rem] rounded-full border border-cyan-300/15" />
+          <div className="absolute inset-x-10 top-8 h-7 rounded-full bg-white/16 blur-xl" />
+          <span className="absolute bottom-7 h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.95)]" />
         </MotionDiv>
       </MotionDiv>
     </MotionDiv>
