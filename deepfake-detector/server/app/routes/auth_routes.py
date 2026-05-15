@@ -40,8 +40,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_PASS = os.getenv("EMAIL_PASS")
 EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+GMAIL_SMTP_SERVER = "smtp.gmail.com"
+GMAIL_SMTP_PORT = 587
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
@@ -91,12 +91,13 @@ def get_mail_config() -> ConnectionConfig:
     return ConnectionConfig(
         MAIL_USERNAME=EMAIL_USER,
         MAIL_PASSWORD=EMAIL_PASS,
-        MAIL_FROM=EMAIL_FROM or EMAIL_USER,
-        MAIL_PORT=SMTP_PORT,
-        MAIL_SERVER=SMTP_HOST,
+        MAIL_FROM=EMAIL_USER,
+        MAIL_PORT=GMAIL_SMTP_PORT,
+        MAIL_SERVER=GMAIL_SMTP_SERVER,
         MAIL_STARTTLS=True,
         MAIL_SSL_TLS=False,
         USE_CREDENTIALS=True,
+        VALIDATE_CERTS=True,
     )
 
 
