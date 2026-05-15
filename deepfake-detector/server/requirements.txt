@@ -5,6 +5,7 @@ python-dotenv
 passlib[bcrypt]
 python-jose
 email-validator
+fastapi-mail
 google-auth
 google-auth-oauthlib
 gradio_client

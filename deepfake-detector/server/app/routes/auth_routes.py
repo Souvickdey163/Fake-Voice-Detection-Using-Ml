@@ -1,16 +1,15 @@
 import os
 import random
 import secrets
-import smtplib
 import time
 from urllib.parse import urlencode
 
 import requests
 from fastapi import APIRouter, HTTPException, Request, status, Depends
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
-from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from dotenv import load_dotenv
 from google_auth_oauthlib.flow import Flow
@@ -43,7 +42,6 @@ EMAIL_PASS = os.getenv("EMAIL_PASS")
 EMAIL_FROM = os.getenv("EMAIL_FROM") or EMAIL_USER
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_TIMEOUT_SECONDS = int(os.getenv("SMTP_TIMEOUT_SECONDS", "20"))
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID") or os.getenv("VITE_GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5173").rstrip("/")
@@ -83,48 +81,47 @@ If you did not request this, please ignore this email.
     return subject, body
 
 
-def send_email_with_smtp(receiver_email: str, subject: str, body: str):
+def get_mail_config() -> ConnectionConfig:
     if not EMAIL_USER or not EMAIL_PASS:
         raise HTTPException(
             status_code=500,
             detail="Email OTP is not configured. Set EMAIL_USER and EMAIL_PASS on the backend."
         )
 
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = EMAIL_FROM
-    msg["To"] = receiver_email
+    return ConnectionConfig(
+        MAIL_USERNAME=EMAIL_USER,
+        MAIL_PASSWORD=EMAIL_PASS,
+        MAIL_FROM=EMAIL_FROM or EMAIL_USER,
+        MAIL_PORT=SMTP_PORT,
+        MAIL_SERVER=SMTP_HOST,
+        MAIL_STARTTLS=True,
+        MAIL_SSL_TLS=False,
+        USE_CREDENTIALS=True,
+    )
 
-    server = None
+
+async def send_email_with_fastapi_mail(receiver_email: str, subject: str, body: str):
     try:
-        server = smtplib.SMTP(
-            SMTP_HOST,
-            SMTP_PORT,
-            timeout=SMTP_TIMEOUT_SECONDS
+        message = MessageSchema(
+            subject=subject,
+            recipients=[receiver_email],
+            body=body,
+            subtype="plain",
         )
-        server.starttls()
-        server.login(EMAIL_USER, EMAIL_PASS)
-        print("LOGIN OK", flush=True)
-        server.send_message(msg)
+        await FastMail(get_mail_config()).send_message(message)
         print("SEND OK", flush=True)
     except Exception as e:
-        print(f"SMTP ERROR: {str(e)}", flush=True)
+        print(f"MAIL ERROR: {str(e)}", flush=True)
         print(f"OTP email failed for {receiver_email}: {type(e).__name__}: {str(e)}", flush=True)
         raise HTTPException(
             status_code=500,
             detail=f"Failed to send OTP email. Check SMTP settings."
         )
-    finally:
-        if server is not None:
-            try:
-                server.quit()
-            except Exception as close_error:
-                print(f"SMTP QUIT ERROR: {str(close_error)}", flush=True)
 
 
-def send_email_otp(receiver_email: str, otp: str, purpose: str = "register"):
+async def send_email_otp(receiver_email: str, otp: str, purpose: str = "register"):
     subject, body = build_otp_email(otp, purpose)
-    send_email_with_smtp(receiver_email, subject, body)
+    await send_email_with_fastapi_mail(receiver_email, subject, body)
 
 
 def store_otp(email: str, otp: str, purpose: str):
@@ -256,7 +253,7 @@ def upsert_google_user(idinfo: dict):
 # SEND OTP FOR REGISTRATION
 # =========================
 @router.post("/send-otp")
-def send_otp(data: dict):
+async def send_otp(data: dict):
     ensure_indexes()
 
     request_start = time.perf_counter()
@@ -287,7 +284,7 @@ def send_otp(data: dict):
     print(f"[otp] otp stored in {time.perf_counter() - step_start:.2f}s", flush=True)
 
     step_start = time.perf_counter()
-    send_email_otp(email, otp, "register")
+    await send_email_otp(email, otp, "register")
     print(
         f"[otp] email sent in {time.perf_counter() - step_start:.2f}s "
         f"(total {time.perf_counter() - request_start:.2f}s)",
@@ -334,7 +331,7 @@ def register_user(user: UserCreate):
 
 
 @router.post("/forgot-password/send-otp")
-def send_password_reset_otp(data: PasswordResetOtpRequest):
+async def send_password_reset_otp(data: PasswordResetOtpRequest):
     ensure_indexes()
 
     email = data.email.strip().lower()
@@ -345,7 +342,7 @@ def send_password_reset_otp(data: PasswordResetOtpRequest):
 
     otp = str(random.randint(100000, 999999))
     store_otp(email, otp, "reset_password")
-    send_email_otp(email, otp, "reset_password")
+    await send_email_otp(email, otp, "reset_password")
 
     return {"message": "Password reset OTP sent successfully."}
 
