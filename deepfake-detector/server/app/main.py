@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from .routes import auth_routes, predict_routes, history_routes, payment_routes, user_routes
-from .routes.auth_routes import get_mail_config
+from .routes.auth_routes import validate_mail_config
 import os
 
 app = FastAPI(title="Deepfake Audio Detection API")
@@ -60,5 +60,5 @@ def health_check():
 
 @app.get("/test-mail")
 def test_mail():
-    get_mail_config()
+    validate_mail_config()
     return {"message": "Mail config working"}
