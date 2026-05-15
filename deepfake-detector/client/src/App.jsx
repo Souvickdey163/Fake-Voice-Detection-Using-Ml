@@ -33,7 +33,7 @@ const ProtectedRoute = ({ children }) => {
   }
   return (
     <AppShell contentClassName="pt-24 pb-10 sm:pt-28 sm:pb-12">
-      <div className="z-10 flex-1 px-4 py-4 sm:p-6">
+      <div className="z-10 flex-1 py-4 sm:py-6">
         {children}
       </div>
     </AppShell>

@@ -32,7 +32,7 @@ export default function Settings() {
   const canShowAvatar = Boolean(user.picture) && brokenAvatarUrl !== user.picture;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="section-shell py-8">
       <div className="mb-8">
         <p className="text-sm uppercase tracking-[0.3em] text-blue-300">Account</p>
         <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Settings</h1>

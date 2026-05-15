@@ -89,7 +89,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="section-shell py-6 sm:py-8">
       {user && (
         <div className="mb-8 text-center animate-fade-in-up sm:mb-10">
           <h1 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">

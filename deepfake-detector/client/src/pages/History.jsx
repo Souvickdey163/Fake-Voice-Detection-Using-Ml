@@ -69,7 +69,7 @@ export default function History() {
     }).format(Number(amount || 0) / 100);
 
   return (
-    <div className="mx-auto max-w-6xl animate-fade-in-up px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="section-shell animate-fade-in-up py-6 sm:py-8">
       <div className="mb-8 flex items-start gap-4 sm:items-center">
         <div className="rounded-xl border border-blue-500/30 bg-blue-600/20 p-3 text-blue-400">
           {isPaymentsTab ? <Receipt className="w-8 h-8" /> : <HistoryIcon className="w-8 h-8" />}
