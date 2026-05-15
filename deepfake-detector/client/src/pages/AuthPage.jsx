@@ -18,6 +18,7 @@ import {
 import toast from 'react-hot-toast';
 import api, { API_CONFIG_ERROR, API_URL } from '../services/api';
 import { useUser } from '../hooks/useUser';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const authHighlights = [
   'Secure access to prediction history and saved reports',
@@ -455,17 +456,13 @@ export default function AuthPage() {
                     disabled={(isRegister ? otpLoading : resetOtpLoading) || !isValidEmail}
                     className="inline-flex min-h-[52px] items-center justify-center rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 text-sm font-medium text-white shadow-[0_0_24px_rgba(34,211,238,0.18)] transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[150px]"
                   >
-                    {isRegister
-                      ? otpLoading
-                        ? 'Sending...'
-                        : registerOtpSent
-                          ? 'Resend OTP'
-                          : 'Send OTP'
-                      : resetOtpLoading
-                        ? 'Sending...'
-                        : resetOtpSent
-                          ? 'Resend OTP'
-                          : 'Send OTP'}
+                    {(isRegister ? otpLoading : resetOtpLoading) ? (
+                      <LoadingIndicator label="Sending..." />
+                    ) : isRegister ? (
+                      registerOtpSent ? 'Resend OTP' : 'Send OTP'
+                    ) : (
+                      resetOtpSent ? 'Resend OTP' : 'Send OTP'
+                    )}
                   </button>
                 </div>
               ) : (
@@ -591,7 +588,7 @@ export default function AuthPage() {
               className="inline-flex min-h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-6 text-base font-medium text-white shadow-[0_0_35px_rgba(59,130,246,0.24)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
-                <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                <LoadingIndicator label={authCopy.submitLabel} />
               ) : (
                 <>
                   <span>{authCopy.submitLabel}</span>

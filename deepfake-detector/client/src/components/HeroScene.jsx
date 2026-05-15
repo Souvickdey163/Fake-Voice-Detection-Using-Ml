@@ -1,5 +1,4 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { useMemo } from 'react';
 
 const MotionDiv = motion.div;
 const MotionSpan = motion.span;
@@ -28,16 +27,6 @@ export default function HeroScene() {
   const ty = useSpring(useTransform(my, [-0.5, 0.5], [-14, 14]), { stiffness: 120, damping: 24 });
   const bgX = useSpring(useTransform(mx, [-0.5, 0.5], [22, -22]), { stiffness: 90, damping: 20 });
   const bgY = useSpring(useTransform(my, [-0.5, 0.5], [18, -18]), { stiffness: 90, damping: 20 });
-
-  const waveformBars = useMemo(
-    () =>
-      Array.from({ length: 36 }, (_, index) => ({
-        id: index,
-        height: 16 + ((index * 11) % 58),
-        delay: index * 0.06,
-      })),
-    []
-  );
 
   const handleMove = (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -79,20 +68,6 @@ export default function HeroScene() {
         </MotionDiv>
       ))}
 
-      <div className="absolute inset-x-10 bottom-8 hidden h-24 rounded-[28px] border border-white/10 bg-slate-950/45 px-5 py-4 backdrop-blur-xl lg:block">
-        <div className="flex h-full items-end gap-1.5">
-          {waveformBars.map((bar) => (
-            <MotionSpan
-              key={bar.id}
-              className="block flex-1 rounded-full bg-gradient-to-t from-cyan-400 via-blue-500 to-violet-400 opacity-80"
-              initial={{ height: 18 }}
-              animate={{ height: [18, bar.height, Math.max(22, bar.height - 12), bar.height] }}
-              transition={{ duration: 2.2, repeat: Infinity, repeatType: 'mirror', delay: bar.delay }}
-            />
-          ))}
-        </div>
-      </div>
-
       {particles.map((particle) => (
         <MotionSpan
           key={particle.id}
@@ -108,7 +83,7 @@ export default function HeroScene() {
           style={{ x: bgX, y: bgY }}
           className="absolute h-[21rem] w-[21rem] rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.16),transparent_62%)] blur-2xl"
         />
-        <div className="absolute h-[20rem] w-[20rem] rounded-full border border-cyan-300/20 bg-cyan-300/5 shadow-[0_0_120px_rgba(56,189,248,0.2)]" />
+        <div className="absolute h-[20rem] w-[20rem] rounded-full border border-cyan-300/20 bg-black/45 shadow-[inset_0_0_70px_rgba(0,0,0,0.72),0_0_120px_rgba(56,189,248,0.2)]" />
         <MotionDiv
           animate={{ rotate: 360 }}
           transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
@@ -122,10 +97,10 @@ export default function HeroScene() {
         <MotionDiv
           animate={{ y: [0, -10, 0], scale: [1, 1.025, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          className="relative flex h-[17rem] w-[17rem] items-center justify-center rounded-full"
+          className="relative flex h-[17rem] w-[17rem] items-center justify-center rounded-full bg-black/30 shadow-[inset_0_0_55px_rgba(0,0,0,0.78)]"
         >
           <div className="absolute h-[16rem] w-[16rem] rounded-full bg-[radial-gradient(circle_at_34%_24%,rgba(255,255,255,0.35),transparent_18%),radial-gradient(circle_at_65%_28%,rgba(168,85,247,0.55),transparent_22%),radial-gradient(circle_at_44%_66%,rgba(34,211,238,0.46),transparent_28%),linear-gradient(145deg,rgba(20,30,66,0.88),rgba(3,7,18,0.2))] opacity-90 blur-sm shadow-[0_0_70px_rgba(56,189,248,0.28)]" />
-          <div className="absolute h-[13.8rem] w-[13.8rem] rounded-full border border-white/10 bg-[radial-gradient(circle_at_50%_50%,rgba(15,23,42,0.2),rgba(2,6,23,0.06)_58%,transparent_72%)]" />
+          <div className="absolute h-[13.8rem] w-[13.8rem] rounded-full border border-white/10 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.72),rgba(2,6,23,0.3)_58%,transparent_72%)]" />
           <MotionDiv
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}

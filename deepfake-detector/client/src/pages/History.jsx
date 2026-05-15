@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 export default function History() {
   const [history, setHistory] = useState([]);
@@ -125,7 +126,7 @@ export default function History() {
           </div>
           {loading ? (
             <div className="p-10 flex justify-center items-center h-48">
-              <div className="w-10 h-10 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
+              <LoadingIndicator label="Loading payment history..." variant="panel" />
             </div>
           ) : payments.length === 0 ? (
             <div className="p-10 text-center flex flex-col items-center justify-center h-48">
@@ -188,7 +189,7 @@ export default function History() {
           </div>
           {loading ? (
             <div className="p-10 flex justify-center items-center h-64">
-              <div className="w-10 h-10 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
+              <LoadingIndicator label="Loading prediction history..." variant="panel" />
             </div>
           ) : history.length === 0 ? (
             <div className="p-10 text-center flex flex-col items-center justify-center h-64">

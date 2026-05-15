@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { UploadCloud, X, Play, Loader2 } from 'lucide-react';
+import { UploadCloud, X, Play } from 'lucide-react';
+import LoadingIndicator from './LoadingIndicator';
 
 export default function UploadCard({ file, setFile, handlePredict, loading, handleReset }) {
   const fileInputRef = useRef(null);
@@ -79,10 +80,7 @@ export default function UploadCard({ file, setFile, handlePredict, loading, hand
             className="btn-primary mt-auto w-full px-4 py-4 text-base shadow-lg shadow-blue-500/20 sm:text-lg"
           >
             {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Running Deep Learning Analysis...</span>
-              </>
+              <LoadingIndicator label="Running Deep Learning Analysis..." />
             ) : (
               <span>Detect Deepfake</span>
             )}

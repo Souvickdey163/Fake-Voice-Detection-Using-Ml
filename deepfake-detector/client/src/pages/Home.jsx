@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import HeroScene from '../components/HeroScene';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const MotionDiv = motion.div;
 
@@ -204,25 +205,33 @@ function HologramVisual({ type = 'globe', label, accent = 'cyan' }) {
 
   if (type === 'pipeline') {
     return (
-      <InteractiveHologram center={false} className="relative min-h-[23rem] overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/70 p-6 shadow-[0_28px_90px_rgba(2,8,23,0.55)] sm:min-h-[25rem]">
-        <div className={`absolute inset-0 bg-gradient-to-br ${style.glow}`} />
-        <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:48px_48px]" />
-        <div className="card-drift relative mx-auto mt-8 flex h-56 max-w-lg items-center justify-between rounded-[30px] border border-white/10 bg-black/25 px-7 backdrop-blur-xl">
+      <InteractiveHologram center={false} className="relative min-h-[22rem] overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.035] p-6 shadow-[0_28px_90px_rgba(2,8,23,0.36)] sm:min-h-[24rem]">
+        <div className={`absolute inset-0 bg-gradient-to-br ${style.glow} opacity-80`} />
+        <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:44px_44px]" />
+        <div className="absolute inset-x-8 top-1/2 h-36 -translate-y-1/2 rounded-[32px] bg-cyan-300/10 blur-3xl" />
+        <div className="relative mx-auto mt-9 flex h-44 max-w-xl items-center justify-between rounded-[26px] border border-white/10 bg-white/[0.045] px-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_20px_60px_rgba(2,8,23,0.24)] backdrop-blur-xl sm:px-8">
           {['Upload', 'Analyze', 'Result'].map((item, index) => (
-            <div key={item} className="relative z-10 flex flex-col items-center gap-3">
-              <div className={`flex h-20 w-20 items-center justify-center rounded-3xl border ${style.border} bg-white/[0.06] shadow-[0_18px_55px_rgba(56,189,248,0.14)]`}>
-                <div className={`h-9 w-9 rounded-2xl bg-gradient-to-br ${style.core} shadow-[0_0_28px_rgba(125,211,252,0.75)]`} />
+            <div key={item} className="relative z-10 flex flex-1 flex-col items-center gap-3">
+              <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${style.border} bg-slate-950/25 shadow-[0_16px_48px_rgba(56,189,248,0.12)]`}>
+                <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${style.core} shadow-[0_0_26px_rgba(125,211,252,0.68)]`} />
               </div>
-              <span className="text-xs uppercase tracking-[0.22em] text-slate-300">{item}</span>
-              {index < 2 && <div className="absolute left-[4.8rem] top-10 hidden h-px w-24 bg-gradient-to-r from-cyan-200/70 to-violet-200/30 sm:block" />}
+              <span className="text-[11px] uppercase tracking-[0.22em] text-slate-300">{item}</span>
+              {index < 2 && <div className="absolute left-[62%] top-8 hidden h-px w-[76%] bg-gradient-to-r from-cyan-200/60 via-blue-300/35 to-violet-200/20 sm:block" />}
             </div>
           ))}
         </div>
-        <div className="absolute inset-x-6 bottom-6 rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-xl">
-          <p className={`mb-3 text-sm font-medium ${style.text}`}>{label}</p>
+        <div className="absolute inset-x-6 bottom-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className={`text-sm font-medium ${style.text}`}>{label}</p>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400">live path</span>
+          </div>
           <div className="grid grid-cols-8 gap-2">
             {Array.from({ length: 16 }, (_, index) => (
-              <span key={index} className={`h-2 rounded-full bg-gradient-to-r ${style.core} opacity-70`} />
+              <span
+                key={index}
+                className={`h-2 rounded-full bg-gradient-to-r ${style.core} opacity-70`}
+                style={{ animationDelay: `${index * 0.08}s` }}
+              />
             ))}
           </div>
         </div>
@@ -630,7 +639,7 @@ export default function Home() {
                     label={useCase.visual === 'family' ? 'Fraud voiceprint check' : useCase.visual === 'business' ? 'Approval signal shield' : 'Creator audio scan'}
                     accent={useCase.accent}
                   />
-                  <div className="relative -mt-5 mx-4 rounded-2xl border border-white/10 bg-black/35 p-4 text-sm leading-6 text-slate-300 backdrop-blur-xl">
+                  <div className="relative mt-4 rounded-2xl border border-white/10 bg-slate-950/45 p-4 text-sm leading-6 text-slate-300 backdrop-blur-xl shadow-[0_18px_55px_rgba(2,8,23,0.3)]">
                     {useCase.caption}
                   </div>
                 </div>
@@ -717,8 +726,8 @@ export default function Home() {
                 disabled={ratingLoading}
                 className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3 font-medium text-white transition-all hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {ratingLoading ? 'Saving...' : 'Submit Rating'}
-                <ArrowRight className="h-4 w-4" />
+                {ratingLoading ? <LoadingIndicator label="Saving..." /> : 'Submit Rating'}
+                {!ratingLoading && <ArrowRight className="h-4 w-4" />}
               </button>
             </form>
           </div>

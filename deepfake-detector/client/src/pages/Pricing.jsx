@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 import { useUser } from '../hooks/useUser';
 import { startPlanCheckout } from '../services/payments';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const plans = [
   {
@@ -153,8 +154,12 @@ export default function Pricing() {
                   : 'border border-white/10 bg-white/5 text-white hover:bg-white/10'
               } ${loadingPlan === plan.id || (user?.plan === plan.id && plan.id !== 'free') ? 'cursor-not-allowed opacity-70' : ''}`}
             >
-              {getButtonLabel(plan)}
-              {(plan.id === 'free' || plan.id === 'enterprise' || user?.plan !== plan.id) && (
+              {loadingPlan === plan.id ? (
+                <LoadingIndicator label="Opening Checkout..." />
+              ) : (
+                getButtonLabel(plan)
+              )}
+              {loadingPlan !== plan.id && (plan.id === 'free' || plan.id === 'enterprise' || user?.plan !== plan.id) && (
                 <ArrowRight className="h-4 w-4" />
               )}
             </button>

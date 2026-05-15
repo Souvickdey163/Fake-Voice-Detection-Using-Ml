@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
+import LoadingIndicator from './LoadingIndicator';
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -166,12 +167,7 @@ export default function ResultCard({ result, loading }) {
   if (loading) {
     return (
       <div className="glass-panel p-6 sm:p-8 flex flex-col items-center justify-center h-full min-h-[400px]">
-        <div className="relative">
-          <div className="w-24 h-24 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Activity className="w-8 h-8 text-blue-500 animate-pulse" />
-          </div>
-        </div>
+        <LoadingIndicator label="" variant="panel" />
         <h3 className="text-xl font-bold text-white mt-8 mb-2">Analyzing Audio Features</h3>
         <p className="text-gray-400 text-center max-w-sm">
           Extracting MFCCs and running through the PyTorch CNN model to determine authenticity.
@@ -392,8 +388,14 @@ export default function ResultCard({ result, loading }) {
         disabled={downloading}
         className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-500 px-6 py-4 text-base font-medium text-white shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <Download className={`h-5 w-5 ${downloading ? 'animate-bounce' : ''}`} />
-        <span>{downloading ? 'Generating PDF...' : 'Download PDF Report'}</span>
+        {downloading ? (
+          <LoadingIndicator label="Generating PDF..." />
+        ) : (
+          <>
+            <Download className="h-5 w-5" />
+            <span>Download PDF Report</span>
+          </>
+        )}
       </button>
     </div>
   );
