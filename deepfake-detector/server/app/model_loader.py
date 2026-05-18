@@ -1,10 +1,12 @@
 import os
+import threading
 import time
 import torch
 import torch.nn as nn
 
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = None
+_model_lock = threading.Lock()
 
 
 def resolve_model_path():
@@ -71,13 +73,16 @@ class DeepfakeCNN(nn.Module):
 def load_model():
     global model
     if model is None:
-        start = time.perf_counter()
-        model = DeepfakeCNN().to(device)
-        model_path = resolve_model_path()
-        print(f"[predict] loading model from {model_path}", flush=True)
-        model.load_state_dict(torch.load(model_path, map_location=device))
-        model.eval()
-        print(f"[predict] model loaded in {time.perf_counter() - start:.2f}s on {device}", flush=True)
+        with _model_lock:
+            if model is None:
+                start = time.perf_counter()
+                loaded_model = DeepfakeCNN().to(device)
+                model_path = resolve_model_path()
+                print(f"[predict] loading model from {model_path}", flush=True)
+                loaded_model.load_state_dict(torch.load(model_path, map_location=device))
+                loaded_model.eval()
+                model = loaded_model
+                print(f"[predict] model loaded in {time.perf_counter() - start:.2f}s on {device}", flush=True)
 
 
 def predict(input_tensor):

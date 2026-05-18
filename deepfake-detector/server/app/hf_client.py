@@ -7,6 +7,7 @@ HF_SPACE_URL = (os.getenv("HF_SPACE_URL") or os.getenv("HF_SPACE_ID") or "").rst
 HF_API_NAME = os.getenv("HF_API_NAME", "/predict")
 HF_MAX_RETRIES = int(os.getenv("HF_MAX_RETRIES", "3"))
 HF_RETRY_DELAY_SECONDS = float(os.getenv("HF_RETRY_DELAY_SECONDS", "2"))
+HF_TIMEOUT_SECONDS = float(os.getenv("HF_TIMEOUT_SECONDS", "120"))
 
 
 def is_hf_enabled():
@@ -20,7 +21,10 @@ def get_hf_client():
 
     from gradio_client import Client
 
-    return Client(HF_SPACE_URL)
+    try:
+        return Client(HF_SPACE_URL, httpx_kwargs={"timeout": HF_TIMEOUT_SECONDS})
+    except TypeError:
+        return Client(HF_SPACE_URL)
 
 
 def _extract_probability(probabilities, key):

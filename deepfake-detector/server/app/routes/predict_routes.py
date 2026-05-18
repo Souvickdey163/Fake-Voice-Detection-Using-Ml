@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from datetime import datetime
+import asyncio
 import os
 import tempfile
 import time
@@ -13,6 +14,8 @@ from ..plan_utils import build_credit_summary
 router = APIRouter(prefix="/api", tags=["predict"])
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_AUDIO_UPLOAD_MB", "10")) * 1024 * 1024
+PREDICTION_TIMEOUT_SECONDS = float(os.getenv("PREDICTION_TIMEOUT_SECONDS", "90"))
+HF_REQUEST_TIMEOUT_SECONDS = float(os.getenv("HF_TIMEOUT_SECONDS", "120"))
 
 
 def build_analysis_report(prediction_label: str, confidence: float, spoof_probability: float):
@@ -76,6 +79,7 @@ def run_local_prediction(file_path):
             raise ValueError("Error processing audio file. Please ensure it's a valid audio format.")
 
         step_start = time.perf_counter()
+        print("STEP 7: model predict", flush=True)
         prediction = predict(features)
         print(f"[predict] local inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
         return prediction
@@ -96,6 +100,7 @@ async def run_prediction(
     request_start = time.perf_counter()
 
     try:
+        print("STEP 1: request received", flush=True)
         print(f"[predict] request started for {file.filename}", flush=True)
         step_start = time.perf_counter()
         used_credits = predictions_collection.count_documents({"user_id": current_user["_id"]})
@@ -122,6 +127,7 @@ async def run_prediction(
 
         with open(file_path, "wb") as buffer:
             buffer.write(contents)
+        print("STEP 2: file saved", flush=True)
         print(
             f"[predict] upload saved in {time.perf_counter() - step_start:.2f}s "
             f"({len(contents)} bytes)",
@@ -131,13 +137,22 @@ async def run_prediction(
         if is_hf_enabled():
             try:
                 step_start = time.perf_counter()
-                prediction_label, confidence, spoof_probability = predict_with_hf(file_path)
+                prediction_label, confidence, spoof_probability = await asyncio.wait_for(
+                    asyncio.to_thread(predict_with_hf, file_path),
+                    timeout=HF_REQUEST_TIMEOUT_SECONDS,
+                )
                 print(f"[predict] hf inference step total {time.perf_counter() - step_start:.2f}s", flush=True)
             except Exception as hf_error:
                 print(f"[predict] HF failed, fallback to local: {hf_error}", flush=True)
-                prediction_label, confidence, spoof_probability = run_local_prediction(file_path)
+                prediction_label, confidence, spoof_probability = await asyncio.wait_for(
+                    asyncio.to_thread(run_local_prediction, file_path),
+                    timeout=PREDICTION_TIMEOUT_SECONDS,
+                )
         else:
-            prediction_label, confidence, spoof_probability = run_local_prediction(file_path)
+            prediction_label, confidence, spoof_probability = await asyncio.wait_for(
+                asyncio.to_thread(run_local_prediction, file_path),
+                timeout=PREDICTION_TIMEOUT_SECONDS,
+            )
         analysis_report = build_analysis_report(
             prediction_label,
             confidence,
@@ -162,6 +177,7 @@ async def run_prediction(
         print(f"[predict] db insert done in {time.perf_counter() - step_start:.2f}s", flush=True)
 
         # Return response
+        print("STEP 8: completed", flush=True)
         print(f"[predict] request completed in {time.perf_counter() - request_start:.2f}s", flush=True)
         return {
             "id": str(result.inserted_id),
@@ -175,6 +191,10 @@ async def run_prediction(
 
     except HTTPException as e:
         raise e
+
+    except asyncio.TimeoutError as e:
+        print(f"[predict] Prediction timed out after {PREDICTION_TIMEOUT_SECONDS:.0f}s", flush=True)
+        raise HTTPException(status_code=504, detail="Prediction timed out. Please try a shorter audio file.") from e
 
     except Exception as e:
         print("🔥 Prediction error:", e, flush=True)

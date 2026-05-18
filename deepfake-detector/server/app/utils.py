@@ -28,13 +28,14 @@ def convert_to_wav(input_path):
         "-y",
         "-i", input_path,
         "-t", str(MAX_AUDIO_LEN),
-        "-ar", str(SAMPLE_RATE),
         "-ac", "1",
+        "-ar", str(SAMPLE_RATE),
         "-vn",
         output_path
     ]
 
     try:
+        print("STEP 3: ffmpeg start", flush=True)
         result = subprocess.run(
             command,
             stdout=subprocess.DEVNULL,
@@ -49,6 +50,7 @@ def convert_to_wav(input_path):
         error_detail = (result.stderr or "").strip().splitlines()[-1:] or ["unknown ffmpeg error"]
         raise ValueError(f"Failed to convert audio to WAV: {error_detail[0]}")
 
+    print("STEP 4: ffmpeg done", flush=True)
     print(f"[predict] ffmpeg conversion done in {time.perf_counter() - start:.2f}s", flush=True)
     return output_path
 
@@ -59,6 +61,7 @@ def convert_to_wav(input_path):
 def extract_features_safe(file_path, sr=SAMPLE_RATE, max_len=MAX_AUDIO_LEN):
     try:
         start = time.perf_counter()
+        print("STEP 5: librosa load", flush=True)
         audio, _ = librosa.load(file_path, sr=sr, mono=True)
 
         if not np.isfinite(audio).all():
@@ -75,6 +78,7 @@ def extract_features_safe(file_path, sr=SAMPLE_RATE, max_len=MAX_AUDIO_LEN):
 
         # ===== SAME FEATURE EXTRACTION AS TRAINING =====
         feature_start = time.perf_counter()
+        print("STEP 6: mfcc extraction", flush=True)
         mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC)
         delta = librosa.feature.delta(mfcc)
         delta2 = librosa.feature.delta(mfcc, order=2)
